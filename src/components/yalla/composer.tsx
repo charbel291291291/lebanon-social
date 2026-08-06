@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { Image, MapPin, Smile, BarChart3, Video, ChevronDown } from "lucide-react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { postTags } from "@/lib/yalla-data";
 import { createPost, postsQueryKey, getInitials } from "@/lib/db";
 import { useAuth } from "@/hooks/use-auth";
+import { supabase } from "@/integrations/supabase/client";
 
 const actions = [
   { icon: Image, label: "Photo" },
@@ -45,18 +46,37 @@ export function Composer() {
     mutation.mutate();
   };
 
-  const displayName = user
-    ? ((user.user_metadata?.full_name as string | undefined) ?? user.email ?? "")
-    : "";
+  const { data: profile } = useQuery({
+    queryKey: ["my-profile-nav", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("full_name, avatar_url")
+        .eq("id", user!.id)
+        .maybeSingle();
+      return data as { full_name: string; avatar_url: string | null } | null;
+    },
+    enabled: !!user?.id,
+    staleTime: 60_000,
+  });
+
+  const displayName =
+    profile?.full_name ||
+    (user?.user_metadata?.full_name as string | undefined) ||
+    user?.email ||
+    "";
+
+  const avatarUrl =
+    profile?.avatar_url ||
+    (user?.user_metadata?.avatar_url as string | undefined) ||
+    null;
 
   return (
     <section className="glass rounded-3xl p-4">
       <form onSubmit={submit}>
         <div className="flex items-center gap-3">
           <Avatar className="size-10 ring-2 ring-primary/30">
-            {user?.user_metadata?.avatar_url && (
-              <AvatarImage src={user.user_metadata.avatar_url as string} />
-            )}
+            {avatarUrl && <AvatarImage src={avatarUrl} />}
             <AvatarFallback className="bg-primary/15 text-sm font-semibold text-primary">
               {user ? getInitials(displayName) : "?"}
             </AvatarFallback>

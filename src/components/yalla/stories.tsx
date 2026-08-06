@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { fetchStories, storiesQueryKey, getInitials, type DbStory } from "@/lib/db";
 import { useAuth } from "@/hooks/use-auth";
+import { supabase } from "@/integrations/supabase/client";
 
 function StoryCard({ story, i }: { story: DbStory; i: number }) {
   return (
@@ -36,9 +37,30 @@ export function Stories() {
     queryFn: fetchStories,
   });
 
-  const displayName = user
-    ? ((user.user_metadata?.full_name as string | undefined) ?? user.email ?? "")
-    : "";
+  const { data: profile } = useQuery({
+    queryKey: ["my-profile-nav", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("full_name, avatar_url")
+        .eq("id", user!.id)
+        .maybeSingle();
+      return data as { full_name: string; avatar_url: string | null } | null;
+    },
+    enabled: !!user?.id,
+    staleTime: 60_000,
+  });
+
+  const displayName =
+    profile?.full_name ||
+    (user?.user_metadata?.full_name as string | undefined) ||
+    user?.email ||
+    "";
+
+  const avatarUrl =
+    profile?.avatar_url ||
+    (user?.user_metadata?.avatar_url as string | undefined) ||
+    null;
 
   return (
     <section aria-label="Stories" className="glass rounded-3xl p-3">
@@ -52,9 +74,7 @@ export function Stories() {
           </span>
           {user && (
             <Avatar className="absolute left-1/2 top-3 size-8 -translate-x-1/2">
-              {user.user_metadata?.avatar_url && (
-                <AvatarImage src={user.user_metadata.avatar_url as string} />
-              )}
+              {avatarUrl && <AvatarImage src={avatarUrl} />}
               <AvatarFallback className="bg-primary/15 text-xs font-bold text-primary">
                 {getInitials(displayName)}
               </AvatarFallback>
