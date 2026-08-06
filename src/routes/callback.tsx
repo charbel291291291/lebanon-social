@@ -22,22 +22,43 @@ function CallbackPage() {
       return;
     }
 
+    // Subscribe to auth state — covers both PKCE (code) and implicit (#access_token) flows.
+    // The Supabase client automatically detects hash tokens and fires SIGNED_IN.
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && session) {
+        subscription.unsubscribe();
+        navigate({ to: "/settings" });
+      }
+    });
+
     if (code) {
+      // PKCE flow: exchange authorization code for a session
       supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
         if (error) {
+          subscription.unsubscribe();
           toast.error(error.message);
           navigate({ to: "/auth" });
-        } else {
-          navigate({ to: "/settings" });
         }
+        // onAuthStateChange fires SIGNED_IN → navigates to /settings
       });
-      return;
+    } else {
+      // Implicit flow or existing session: check now and let onAuthStateChange handle hash tokens
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) {
+          subscription.unsubscribe();
+          navigate({ to: "/settings" });
+        } else if (!window.location.hash.includes("access_token")) {
+          // Nothing to process
+          subscription.unsubscribe();
+          navigate({ to: "/auth" });
+        }
+        // If hash has access_token, onAuthStateChange will fire shortly
+      });
     }
 
-    // No code or error — check if session already exists (e.g. implicit flow)
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      navigate({ to: session ? "/settings" : "/auth" });
-    });
+    return () => subscription.unsubscribe();
   }, [navigate]);
 
   return (
