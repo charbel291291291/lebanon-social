@@ -1,0 +1,17 @@
+{
+  "name": "FaceLeb",
+  "short_name": "FaceLeb",
+  "description": "Lebanon's social network for neighborhoods, universities, food, events and local businesses.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1A4BFF",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

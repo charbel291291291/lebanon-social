@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ThemeToggle } from "./theme-toggle";
+import { FaceLebIcon } from "./faceleb-icon";
 import { useAuth } from "@/hooks/use-auth";
 
 export function TopBar() {
@@ -12,11 +13,9 @@ export function TopBar() {
     <header className="sticky top-0 z-50 glass rounded-none border-x-0 border-t-0">
       <div className="mx-auto flex h-16 max-w-[1400px] items-center gap-3 px-4">
         <Link to="/" className="flex items-center gap-2">
-          <span className="grid size-10 place-items-center rounded-2xl bg-gradient-to-br from-primary to-accent text-lg font-bold text-primary-foreground shadow-lift">
-            F
-          </span>
+          <FaceLebIcon className="size-10 shrink-0 drop-shadow-sm" />
           <span className="hidden font-[family-name:var(--font-display)] text-xl font-extrabold tracking-tight sm:block">
-            Face<span className="text-gradient-cedar">Leb</span>
+            <span style={{ color: "#1A4BFF" }}>Face</span><span style={{ color: "#EE0000" }}>Leb</span>
           </span>
         </Link>
 

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FaceLebIcon } from "@/components/yalla/faceleb-icon";
 
 const title = "Sign in to FaceLeb";
 const description =
@@ -86,15 +87,13 @@ function AuthPage() {
   return (
     <div className="grid min-h-screen place-items-center px-4 py-10">
       <div className="glass w-full max-w-md rounded-3xl p-6">
-        <div className="mb-6 flex items-center gap-2">
-          <span className="grid size-11 place-items-center rounded-2xl bg-gradient-to-br from-primary to-accent text-lg font-bold text-primary-foreground shadow-lift">
-            F
-          </span>
+        <div className="mb-6 flex items-center gap-3">
+          <FaceLebIcon className="size-14 shrink-0 drop-shadow-sm" />
           <div>
-            <h1 className="font-[family-name:var(--font-display)] text-xl font-extrabold">
-              Face<span className="text-gradient-cedar">Leb</span>
+            <h1 className="font-[family-name:var(--font-display)] text-2xl font-extrabold leading-none">
+              <span style={{ color: "#1A4BFF" }}>Face</span><span style={{ color: "#EE0000" }}>Leb</span>
             </h1>
-            <p className="text-xs text-muted-foreground">أهلا وسهلا — welcome back</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">أهلا وسهلا — welcome back</p>
           </div>
         </div>
 

@@ -1,15 +1,79 @@
 import { useState } from "react";
 import { BadgeCheck, MessageSquare, Share2, MoreHorizontal } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { reactions, type Post, type ReactionKey } from "@/lib/yalla-data";
+import { reactions, type ReactionKey } from "@/lib/yalla-data";
+import {
+  type DbPost,
+  toggleReaction,
+  votePoll,
+  postsQueryKey,
+  getInitials,
+  relativeTime,
+} from "@/lib/db";
+import { useAuth } from "@/hooks/use-auth";
 
-export function PostCard({ post, index = 0 }: { post: Post; index?: number }) {
-  const [picked, setPicked] = useState<ReactionKey | null>(null);
-  const [open, setOpen] = useState(false);
-  const active = reactions.find((r) => r.key === picked);
-  const total = post.counts.reactions + (picked ? 1 : 0);
-  const pollTotal = post.poll?.options.reduce((a, o) => a + o.votes, 0) ?? 0;
+export function PostCard({ post, index = 0 }: { post: DbPost; index?: number }) {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const [reactionOpen, setReactionOpen] = useState(false);
+
+  // ── Optimistic reaction toggle ─────────────────────────────────
+  const reactionMutation = useMutation({
+    mutationFn: ({ reaction }: { reaction: ReactionKey }) =>
+      toggleReaction(post.id, user!.id, reaction, post.my_reaction),
+    onMutate: async ({ reaction }) => {
+      const qk = postsQueryKey(user?.id);
+      await queryClient.cancelQueries({ queryKey: qk });
+      const prev = queryClient.getQueryData<DbPost[]>(qk);
+
+      queryClient.setQueryData<DbPost[]>(qk, (old) =>
+        (old ?? []).map((p) => {
+          if (p.id !== post.id) return p;
+          const same = p.my_reaction === reaction;
+          const counts = { ...p.reaction_counts };
+          if (p.my_reaction) counts[p.my_reaction] = Math.max(0, (counts[p.my_reaction] ?? 0) - 1);
+          if (!same) counts[reaction] = (counts[reaction] ?? 0) + 1;
+          return {
+            ...p,
+            my_reaction: same ? null : reaction,
+            reaction_counts: counts,
+            total_reactions: p.total_reactions + (same ? -1 : p.my_reaction ? 0 : 1),
+          };
+        })
+      );
+      return { prev };
+    },
+    onError: (_e, _v, ctx) => {
+      if (ctx?.prev) queryClient.setQueryData(postsQueryKey(user?.id), ctx.prev);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["posts"] }),
+  });
+
+  // ── Optimistic poll vote ────────────────────────────────────────
+  const pollMutation = useMutation({
+    mutationFn: ({ optionId }: { optionId: string }) =>
+      votePoll(post.poll!.id, user!.id, optionId),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["posts"] }),
+  });
+
+  const handleReaction = (r: ReactionKey) => {
+    if (!user) return;
+    reactionMutation.mutate({ reaction: r });
+    setReactionOpen(false);
+  };
+
+  const active = reactions.find((r) => r.key === post.my_reaction);
+  const topReactions = Object.entries(post.reaction_counts)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 3)
+    .map(([k]) => reactions.find((r) => r.key === k)?.emoji)
+    .filter(Boolean) as string[];
+  const displayEmojis = topReactions.length ? topReactions : ["👍", "❤️", "🌲"];
+
+  const pollTotal = post.poll?.options.reduce((a, o) => a + o.vote_count, 0) ?? 0;
+  const myVote = post.poll?.my_vote_option_id;
 
   return (
     <article
@@ -18,17 +82,20 @@ export function PostCard({ post, index = 0 }: { post: Post; index?: number }) {
     >
       <header className="flex items-center gap-3 p-4">
         <Avatar className="size-11 ring-2 ring-primary/25">
+          {post.author.avatar_url && <AvatarImage src={post.author.avatar_url} />}
           <AvatarFallback className="bg-primary/15 text-sm font-semibold text-primary">
-            {post.initials}
+            {getInitials(post.author.full_name)}
           </AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
           <p className="flex items-center gap-1 text-sm font-semibold">
-            {post.author}
-            {post.verified && <BadgeCheck className="size-4 text-gold" aria-label="Verified" />}
+            {post.author.full_name || post.author.username}
+            {post.author.is_verified && (
+              <BadgeCheck className="size-4 text-gold" aria-label="Verified" />
+            )}
           </p>
           <p className="truncate text-xs text-muted-foreground">
-            {post.place} · {post.time}
+            {post.place ?? post.governorate ?? "Lebanon"} · {relativeTime(post.created_at)}
           </p>
         </div>
         <Badge variant="secondary" className="rounded-full border-0 bg-accent/12 text-accent">
@@ -41,13 +108,11 @@ export function PostCard({ post, index = 0 }: { post: Post; index?: number }) {
 
       <p className="px-4 pb-3 text-[0.95rem] leading-relaxed">{post.body}</p>
 
-      {post.image && (
+      {post.image_url && (
         <img
-          src={post.image}
+          src={post.image_url}
           alt={post.body.slice(0, 60)}
           loading="lazy"
-          width={1200}
-          height={900}
           className="max-h-[26rem] w-full object-cover"
         />
       )}
@@ -56,11 +121,16 @@ export function PostCard({ post, index = 0 }: { post: Post; index?: number }) {
         <div className="space-y-2 px-4 pb-2">
           <p className="text-sm font-semibold">{post.poll.question}</p>
           {post.poll.options.map((o) => {
-            const pct = Math.round((o.votes / pollTotal) * 100);
+            const pct = pollTotal > 0 ? Math.round((o.vote_count / pollTotal) * 100) : 0;
+            const voted = myVote === o.id;
             return (
               <button
-                key={o.label}
-                className="relative w-full overflow-hidden rounded-2xl border border-border/60 bg-background/40 px-3 py-2 text-left text-sm font-medium"
+                key={o.id}
+                onClick={() => user && pollMutation.mutate({ optionId: o.id })}
+                disabled={!user || !!myVote || pollMutation.isPending}
+                className={`relative w-full overflow-hidden rounded-2xl border px-3 py-2 text-left text-sm font-medium transition-colors ${
+                  voted ? "border-primary/60 bg-primary/5" : "border-border/60 bg-background/40"
+                }`}
               >
                 <span
                   className="absolute inset-y-0 left-0 bg-primary/15 transition-[width] duration-700"
@@ -73,6 +143,7 @@ export function PostCard({ post, index = 0 }: { post: Post; index?: number }) {
               </button>
             );
           })}
+          <p className="text-xs text-muted-foreground">{pollTotal} votes</p>
         </div>
       )}
 
@@ -80,34 +151,34 @@ export function PostCard({ post, index = 0 }: { post: Post; index?: number }) {
         <div className="flex items-center justify-between px-1 pb-2 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
             <span className="flex -space-x-1">
-              {["👍", "❤️", "🌲"].map((e) => (
-                <span key={e} className="grid size-5 place-items-center rounded-full bg-card text-[10px] ring-1 ring-border">
+              {displayEmojis.map((e) => (
+                <span
+                  key={e}
+                  className="grid size-5 place-items-center rounded-full bg-card text-[10px] ring-1 ring-border"
+                >
                   {e}
                 </span>
               ))}
             </span>
-            {total.toLocaleString()}
+            {post.total_reactions.toLocaleString()}
           </span>
           <span>
-            {post.counts.comments} comments · {post.counts.shares} shares
+            {post.comment_count} comments
           </span>
         </div>
 
         <div className="grid grid-cols-3 gap-1 border-t border-border/50 pt-2">
           <div
             className="relative"
-            onMouseEnter={() => setOpen(true)}
-            onMouseLeave={() => setOpen(false)}
+            onMouseEnter={() => setReactionOpen(true)}
+            onMouseLeave={() => setReactionOpen(false)}
           >
-            {open && (
+            {reactionOpen && (
               <div className="glass absolute -top-14 left-0 z-20 flex animate-pop gap-1 rounded-full p-1.5">
                 {reactions.map((r) => (
                   <button
                     key={r.key}
-                    onClick={() => {
-                      setPicked(picked === r.key ? null : r.key);
-                      setOpen(false);
-                    }}
+                    onClick={() => handleReaction(r.key)}
                     title={r.label}
                     aria-label={r.label}
                     className="grid size-9 place-items-center rounded-full text-lg transition-transform hover:-translate-y-1 hover:scale-125"
@@ -118,9 +189,9 @@ export function PostCard({ post, index = 0 }: { post: Post; index?: number }) {
               </div>
             )}
             <button
-              onClick={() => setPicked(picked ? null : "like")}
+              onClick={() => handleReaction("like")}
               className={`flex w-full items-center justify-center gap-2 rounded-2xl py-2 text-sm font-semibold transition-colors hover:bg-primary/10 ${
-                picked ? "text-primary" : "text-muted-foreground"
+                post.my_reaction ? "text-primary" : "text-muted-foreground"
               }`}
             >
               <span className="text-base">{active?.emoji ?? "👍"}</span>

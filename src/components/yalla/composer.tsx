@@ -1,6 +1,13 @@
-import { Image, MapPin, Smile, BarChart3, Video } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useState, useRef } from "react";
+import { Image, MapPin, Smile, BarChart3, Video, ChevronDown } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
+import { toast } from "sonner";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { postTags } from "@/lib/yalla-data";
+import { createPost, postsQueryKey, getInitials } from "@/lib/db";
+import { useAuth } from "@/hooks/use-auth";
 
 const actions = [
   { icon: Image, label: "Photo" },
@@ -11,30 +18,152 @@ const actions = [
 ];
 
 export function Composer() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const [body, setBody] = useState("");
+  const [tag, setTag] = useState<string>("General");
+  const [expanded, setExpanded] = useState(false);
+  const [showTagPicker, setShowTagPicker] = useState(false);
+
+  const mutation = useMutation({
+    mutationFn: () => createPost(user!.id, body.trim(), tag),
+    onSuccess: () => {
+      setBody("");
+      setExpanded(false);
+      setShowTagPicker(false);
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      toast.success("Post shared!");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!body.trim()) return;
+    mutation.mutate();
+  };
+
+  const displayName = user
+    ? ((user.user_metadata?.full_name as string | undefined) ?? user.email ?? "")
+    : "";
+
   return (
     <section className="glass rounded-3xl p-4">
-      <div className="flex items-center gap-3">
-        <Avatar className="size-10 ring-2 ring-primary/30">
-          <AvatarFallback className="bg-primary/15 text-sm font-semibold text-primary">YO</AvatarFallback>
-        </Avatar>
-        <input
-          aria-label="Create a post"
-          placeholder="Shu fi ma fi? Share something with your community…"
-          className="h-11 flex-1 rounded-full border border-border/60 bg-background/50 px-4 text-sm outline-none transition-shadow placeholder:text-muted-foreground focus:ring-2 focus:ring-ring/40"
-        />
-        <Button className="hidden rounded-full px-5 font-semibold sm:inline-flex">Post</Button>
-      </div>
-      <div className="mt-3 flex flex-wrap gap-1 border-t border-border/50 pt-3">
-        {actions.map(({ icon: Icon, label }) => (
-          <button
-            key={label}
-            className="flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent/10 hover:text-accent"
-          >
-            <Icon className="size-4" />
-            {label}
-          </button>
-        ))}
-      </div>
+      <form onSubmit={submit}>
+        <div className="flex items-center gap-3">
+          <Avatar className="size-10 ring-2 ring-primary/30">
+            {user?.user_metadata?.avatar_url && (
+              <AvatarImage src={user.user_metadata.avatar_url as string} />
+            )}
+            <AvatarFallback className="bg-primary/15 text-sm font-semibold text-primary">
+              {user ? getInitials(displayName) : "?"}
+            </AvatarFallback>
+          </Avatar>
+
+          {user ? (
+            <input
+              ref={inputRef}
+              aria-label="Create a post"
+              placeholder="Shu fi ma fi? Share something with your community…"
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              onFocus={() => setExpanded(true)}
+              className="h-11 flex-1 rounded-full border border-border/60 bg-background/50 px-4 text-sm outline-none transition-shadow placeholder:text-muted-foreground focus:ring-2 focus:ring-ring/40"
+            />
+          ) : (
+            <Link
+              to="/auth"
+              className="h-11 flex-1 cursor-pointer rounded-full border border-border/60 bg-background/50 px-4 text-sm leading-[2.75rem] text-muted-foreground transition-colors hover:bg-muted/40"
+            >
+              Shu fi ma fi? Sign in to share…
+            </Link>
+          )}
+
+          {expanded && user && (
+            <Button
+              type="submit"
+              disabled={!body.trim() || mutation.isPending}
+              className="rounded-full px-5 font-semibold"
+            >
+              {mutation.isPending ? "Posting…" : "Post"}
+            </Button>
+          )}
+
+          {!expanded && (
+            <Button
+              type="button"
+              onClick={() => { setExpanded(true); inputRef.current?.focus(); }}
+              className="hidden rounded-full px-5 font-semibold sm:inline-flex"
+            >
+              Post
+            </Button>
+          )}
+        </div>
+
+        {expanded && user && (
+          <div className="mt-3 space-y-2 border-t border-border/50 pt-3">
+            {/* Tag picker */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowTagPicker((v) => !v)}
+                className="flex items-center gap-1.5 rounded-full border border-border/60 bg-background/40 px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted/40"
+              >
+                {tag} <ChevronDown className="size-3" />
+              </button>
+              {showTagPicker && (
+                <div className="glass absolute left-0 top-full z-30 mt-1 flex flex-wrap gap-1.5 rounded-2xl p-2 shadow-lift">
+                  {postTags.map((t) => (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => { setTag(t); setShowTagPicker(false); }}
+                      className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+                        tag === t
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground hover:bg-primary/10"
+                      }`}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex flex-wrap gap-1">
+              {actions.map(({ icon: Icon, label }) => (
+                <button
+                  key={label}
+                  type="button"
+                  className="flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent/10 hover:text-accent"
+                >
+                  <Icon className="size-4" />
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {!expanded && (
+          <div className="mt-3 flex flex-wrap gap-1 border-t border-border/50 pt-3">
+            {actions.map(({ icon: Icon, label }) => (
+              <button
+                key={label}
+                type="button"
+                className="flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent/10 hover:text-accent"
+              >
+                <Icon className="size-4" />
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
+      </form>
     </section>
   );
 }
