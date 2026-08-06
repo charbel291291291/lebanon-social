@@ -18,19 +18,17 @@ import { governorates } from "@/lib/yalla-data";
 import { useAuth } from "@/hooks/use-auth";
 import { getInitials } from "@/lib/db";
 
-const feedItems = [
-  { icon: Home, label: "Feed", to: "/" as const },
-];
-
-const sectionItems = [
-  { icon: Users, label: "Communities" },
-  { icon: CalendarDays, label: "Events" },
-  { icon: Store, label: "Marketplace" },
-  { icon: Building2, label: "Businesses" },
-  { icon: UtensilsCrossed, label: "Food" },
-  { icon: Mountain, label: "Tourism" },
-  { icon: Flame, label: "Trending" },
-];
+const navItems = [
+  { icon: Home,            label: "Feed",        to: "/"            },
+  { icon: Users,           label: "Communities", to: "/communities" },
+  { icon: CalendarDays,    label: "Events",      to: "/events"      },
+  { icon: Store,           label: "Marketplace", to: "/marketplace" },
+  { icon: Building2,       label: "Businesses",  to: "/businesses"  },
+  { icon: UtensilsCrossed, label: "Food",        to: "/food"        },
+  { icon: Mountain,        label: "Tourism",     to: "/tourism"     },
+  { icon: Flame,           label: "Trending",    to: "/trending"    },
+  { icon: Settings,        label: "Settings",    to: "/settings"    },
+] as const;
 
 const LINK_BASE =
   "flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold transition-all hover:bg-primary/10";
@@ -100,36 +98,17 @@ export function LeftNav() {
 
       {/* Navigation */}
       <div className="glass rounded-3xl p-2">
-        {/* Feed — real route, gets active styling */}
-        <Link
-          to="/"
-          activeOptions={{ exact: true }}
-          className={`${LINK_BASE} text-foreground/80 data-[status=active]:bg-primary/12 data-[status=active]:text-primary`}
-        >
-          <Home className="size-5" />
-          Feed
-        </Link>
-
-        {/* Section items — no dedicated routes yet, styled as nav buttons */}
-        {sectionItems.map(({ icon: Icon, label }) => (
-          <button
+        {navItems.map(({ icon: Icon, label, to }) => (
+          <Link
             key={label}
-            className={`${LINK_BASE} text-foreground/80`}
+            to={to}
+            activeOptions={to === "/" ? { exact: true } : { exact: true }}
+            className={`${LINK_BASE} text-foreground/80 data-[status=active]:bg-primary/12 data-[status=active]:text-primary`}
           >
             <Icon className="size-5" />
             {label}
-          </button>
+          </Link>
         ))}
-
-        {/* Settings — real route */}
-        <Link
-          to="/settings"
-          activeOptions={{ exact: true }}
-          className={`${LINK_BASE} text-foreground/80 data-[status=active]:bg-primary/12 data-[status=active]:text-primary`}
-        >
-          <Settings className="size-5" />
-          Settings
-        </Link>
       </div>
 
       {/* Governorates */}
