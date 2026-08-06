@@ -1,0 +1,15 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": ".vercel/output",
+  "env": {
+    "NITRO_PRESET": "vercel"
+  },
+  "build": {
+    "env": {
+      "NITRO_PRESET": "vercel",
+      "VITE_SUPABASE_URL": "https://xolptijtnjnucbevyvam.supabase.co",
+      "VITE_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_P67P3oJXbIg3j_v-246YwA_UjMIQGId",
+      "VITE_SUPABASE_PROJECT_ID": "xolptijtnjnucbevyvam"
+    }
+  }
+}
