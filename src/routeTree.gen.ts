@@ -12,7 +12,14 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as BusinessesRouteImport } from './routes/businesses'
 import { Route as CallbackRouteImport } from './routes/callback'
+import { Route as CommunitiesRouteImport } from './routes/communities'
+import { Route as EventsRouteImport } from './routes/events'
+import { Route as FoodRouteImport } from './routes/food'
+import { Route as MarketplaceRouteImport } from './routes/marketplace'
+import { Route as TourismRouteImport } from './routes/tourism'
+import { Route as TrendingRouteImport } from './routes/trending'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as UUsernameRouteImport } from './routes/u.$username'
 
@@ -30,9 +37,44 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BusinessesRoute = BusinessesRouteImport.update({
+  id: '/businesses',
+  path: '/businesses',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CallbackRoute = CallbackRouteImport.update({
   id: '/callback',
   path: '/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CommunitiesRoute = CommunitiesRouteImport.update({
+  id: '/communities',
+  path: '/communities',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EventsRoute = EventsRouteImport.update({
+  id: '/events',
+  path: '/events',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FoodRoute = FoodRouteImport.update({
+  id: '/food',
+  path: '/food',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MarketplaceRoute = MarketplaceRouteImport.update({
+  id: '/marketplace',
+  path: '/marketplace',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TourismRoute = TourismRouteImport.update({
+  id: '/tourism',
+  path: '/tourism',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrendingRoute = TrendingRouteImport.update({
+  id: '/trending',
+  path: '/trending',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
@@ -49,14 +91,28 @@ const UUsernameRoute = UUsernameRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/businesses': typeof BusinessesRoute
   '/callback': typeof CallbackRoute
+  '/communities': typeof CommunitiesRoute
+  '/events': typeof EventsRoute
+  '/food': typeof FoodRoute
+  '/marketplace': typeof MarketplaceRoute
+  '/tourism': typeof TourismRoute
+  '/trending': typeof TrendingRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/u/$username': typeof UUsernameRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/businesses': typeof BusinessesRoute
   '/callback': typeof CallbackRoute
+  '/communities': typeof CommunitiesRoute
+  '/events': typeof EventsRoute
+  '/food': typeof FoodRoute
+  '/marketplace': typeof MarketplaceRoute
+  '/tourism': typeof TourismRoute
+  '/trending': typeof TrendingRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/u/$username': typeof UUsernameRoute
 }
@@ -65,21 +121,59 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/businesses': typeof BusinessesRoute
   '/callback': typeof CallbackRoute
+  '/communities': typeof CommunitiesRoute
+  '/events': typeof EventsRoute
+  '/food': typeof FoodRoute
+  '/marketplace': typeof MarketplaceRoute
+  '/tourism': typeof TourismRoute
+  '/trending': typeof TrendingRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/u/$username': typeof UUsernameRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/callback' | '/settings' | '/u/$username'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/businesses'
+    | '/callback'
+    | '/communities'
+    | '/events'
+    | '/food'
+    | '/marketplace'
+    | '/tourism'
+    | '/trending'
+    | '/settings'
+    | '/u/$username'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/callback' | '/settings' | '/u/$username'
+  to:
+    | '/'
+    | '/auth'
+    | '/businesses'
+    | '/callback'
+    | '/communities'
+    | '/events'
+    | '/food'
+    | '/marketplace'
+    | '/tourism'
+    | '/trending'
+    | '/settings'
+    | '/u/$username'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/businesses'
     | '/callback'
+    | '/communities'
+    | '/events'
+    | '/food'
+    | '/marketplace'
+    | '/tourism'
+    | '/trending'
     | '/_authenticated/settings'
     | '/u/$username'
   fileRoutesById: FileRoutesById
@@ -88,7 +182,14 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  BusinessesRoute: typeof BusinessesRoute
   CallbackRoute: typeof CallbackRoute
+  CommunitiesRoute: typeof CommunitiesRoute
+  EventsRoute: typeof EventsRoute
+  FoodRoute: typeof FoodRoute
+  MarketplaceRoute: typeof MarketplaceRoute
+  TourismRoute: typeof TourismRoute
+  TrendingRoute: typeof TrendingRoute
   UUsernameRoute: typeof UUsernameRoute
 }
 
@@ -115,11 +216,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/businesses': {
+      id: '/businesses'
+      path: '/businesses'
+      fullPath: '/businesses'
+      preLoaderRoute: typeof BusinessesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/callback': {
       id: '/callback'
       path: '/callback'
       fullPath: '/callback'
       preLoaderRoute: typeof CallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/communities': {
+      id: '/communities'
+      path: '/communities'
+      fullPath: '/communities'
+      preLoaderRoute: typeof CommunitiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/events': {
+      id: '/events'
+      path: '/events'
+      fullPath: '/events'
+      preLoaderRoute: typeof EventsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/food': {
+      id: '/food'
+      path: '/food'
+      fullPath: '/food'
+      preLoaderRoute: typeof FoodRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/marketplace': {
+      id: '/marketplace'
+      path: '/marketplace'
+      fullPath: '/marketplace'
+      preLoaderRoute: typeof MarketplaceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tourism': {
+      id: '/tourism'
+      path: '/tourism'
+      fullPath: '/tourism'
+      preLoaderRoute: typeof TourismRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/trending': {
+      id: '/trending'
+      path: '/trending'
+      fullPath: '/trending'
+      preLoaderRoute: typeof TrendingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/settings': {
@@ -154,7 +304,14 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  BusinessesRoute: BusinessesRoute,
   CallbackRoute: CallbackRoute,
+  CommunitiesRoute: CommunitiesRoute,
+  EventsRoute: EventsRoute,
+  FoodRoute: FoodRoute,
+  MarketplaceRoute: MarketplaceRoute,
+  TourismRoute: TourismRoute,
+  TrendingRoute: TrendingRoute,
   UUsernameRoute: UUsernameRoute,
 }
 export const routeTree = rootRouteImport

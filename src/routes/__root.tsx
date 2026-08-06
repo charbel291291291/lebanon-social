@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
+import { PWABanners } from "@/components/yalla/pwa-banners";
 
 function NotFoundComponent() {
   return (
@@ -87,6 +88,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@FaceLeb" },
       { name: "theme-color", content: "#1A4BFF" },
+      // iOS PWA
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "FaceLeb" },
+      // Microsoft
+      { name: "msapplication-TileColor", content: "#1A4BFF" },
+      { name: "msapplication-TileImage", content: "/icons/icon-144.png" },
+      { name: "msapplication-config", content: "none" },
+      // Mobile
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "application-name", content: "FaceLeb" },
+      { name: "format-detection", content: "telephone=no" },
     ],
     links: [
       {
@@ -101,7 +114,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
       { rel: "alternate icon", href: "/favicon.ico", type: "image/x-icon" },
-      { rel: "apple-touch-icon", href: "/favicon.svg" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
       { rel: "manifest", href: "/site.webmanifest" },
     ],
   }),
@@ -133,6 +146,7 @@ function RootComponent() {
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
       <Toaster position="top-center" />
+      <PWABanners />
     </QueryClientProvider>
   );
 }

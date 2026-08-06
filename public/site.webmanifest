@@ -1,17 +1,70 @@
 {
-  "name": "FaceLeb",
+  "id": "/",
+  "name": "FaceLeb — Lebanon's Social Network",
   "short_name": "FaceLeb",
   "description": "Lebanon's social network for neighborhoods, universities, food, events and local businesses.",
-  "start_url": "/",
+  "start_url": "/?source=pwa",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "portrait-primary",
+  "background_color": "#0f0f13",
   "theme_color": "#1A4BFF",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["social", "news", "lifestyle"],
   "icons": [
+    { "src": "/icons/icon-72.png",           "sizes": "72x72",   "type": "image/png" },
+    { "src": "/icons/icon-96.png",           "sizes": "96x96",   "type": "image/png" },
+    { "src": "/icons/icon-128.png",          "sizes": "128x128", "type": "image/png" },
+    { "src": "/icons/icon-144.png",          "sizes": "144x144", "type": "image/png" },
+    { "src": "/icons/icon-152.png",          "sizes": "152x152", "type": "image/png" },
+    { "src": "/icons/icon-192.png",          "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-256.png",          "sizes": "256x256", "type": "image/png" },
+    { "src": "/icons/icon-384.png",          "sizes": "384x384", "type": "image/png" },
+    { "src": "/icons/icon-512.png",          "sizes": "512x512", "type": "image/png" },
+    { "src": "/favicon.svg",                 "sizes": "any",     "type": "image/svg+xml" },
+    { "src": "/icons/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
     {
-      "src": "/favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "name": "Feed",
+      "short_name": "Feed",
+      "description": "See what's happening in Lebanon",
+      "url": "/?source=shortcut",
+      "icons": [{ "src": "/icons/icon-96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Marketplace",
+      "short_name": "Market",
+      "description": "Buy and sell in the community",
+      "url": "/marketplace?source=shortcut",
+      "icons": [{ "src": "/icons/icon-96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Events",
+      "short_name": "Events",
+      "description": "Upcoming events near you",
+      "url": "/events?source=shortcut",
+      "icons": [{ "src": "/icons/icon-96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Food & Restaurants",
+      "short_name": "Food",
+      "description": "Discover the best restaurants",
+      "url": "/food?source=shortcut",
+      "icons": [{ "src": "/icons/icon-96.png", "sizes": "96x96" }]
     }
-  ]
+  ],
+  "screenshots": [
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "FaceLeb — Feed"
+    }
+  ],
+  "prefer_related_applications": false
 }

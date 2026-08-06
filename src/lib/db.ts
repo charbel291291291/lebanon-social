@@ -3,11 +3,15 @@ import type { ReactionKey } from "./yalla-data";
 
 // ── Query keys ──────────────────────────────────────────────────
 
-export const postsQueryKey    = (uid?: string) => ["posts",       uid ?? "anon"] as const;
-export const storiesQueryKey  = (uid?: string) => ["stories",     uid ?? "anon"] as const;
-export const commQueryKey     = (uid?: string) => ["communities", uid ?? "anon"] as const;
-export const eventsQueryKey   = (uid?: string) => ["events",      uid ?? "anon"] as const;
-export const trendsQueryKey   = ()             => ["trends"]                     as const;
+export const postsQueryKey    = (uid?: string)      => ["posts",       uid ?? "anon"] as const;
+export const storiesQueryKey  = (uid?: string)      => ["stories",     uid ?? "anon"] as const;
+export const commQueryKey     = (uid?: string)      => ["communities", uid ?? "anon"] as const;
+export const eventsQueryKey   = (uid?: string)      => ["events",      uid ?? "anon"] as const;
+export const trendsQueryKey   = ()                  => ["trends"]                     as const;
+export const listingsQueryKey = (cat?: string)      => ["listings",    cat ?? "all"]  as const;
+export const businessesQueryKey = (cat?: string)    => ["businesses",  cat ?? "all"]  as const;
+export const foodQueryKey     = (cuisine?: string)  => ["food",        cuisine ?? "all"] as const;
+export const tourismQueryKey  = (cat?: string)      => ["tourism",     cat ?? "all"]  as const;
 
 // ── Display types ───────────────────────────────────────────────
 
@@ -316,4 +320,138 @@ export async function rsvpEvent(
     .from("event_attendees")
     .upsert({ event_id: eventId, user_id: userId, status });
   if (error) throw error;
+}
+
+// ── Marketplace ──────────────────────────────────────────────────
+
+export type DbListing = {
+  id: string;
+  seller_id: string;
+  seller: DbAuthor;
+  title: string;
+  description: string;
+  price: number | null;
+  currency: string;
+  category: string;
+  condition: string;
+  governorate: string | null;
+  image_url: string | null;
+  status: string;
+  created_at: string;
+};
+
+export async function fetchListings(category?: string): Promise<DbListing[]> {
+  let q = db
+    .from("marketplace_listings")
+    .select("*, seller:profiles!marketplace_listings_seller_id_fkey(id, username, full_name, avatar_url, is_verified)")
+    .eq("status", "active")
+    .order("created_at", { ascending: false })
+    .limit(40);
+  if (category) q = (q as any).eq("category", category);
+  const { data, error } = await q;
+  if (error) throw error;
+  return (data as any[]) ?? [];
+}
+
+export async function createListing(
+  sellerId: string,
+  data: {
+    title: string; description: string; price: number | null;
+    currency: string; category: string; condition: string; governorate?: string;
+  }
+): Promise<void> {
+  const { error } = await db.from("marketplace_listings").insert({ seller_id: sellerId, ...data });
+  if (error) throw error;
+}
+
+// ── Businesses ───────────────────────────────────────────────────
+
+export type DbBusiness = {
+  id: string;
+  owner_id: string | null;
+  name: string;
+  category: string;
+  description: string;
+  governorate: string | null;
+  phone: string | null;
+  website: string | null;
+  logo_url: string | null;
+  is_verified: boolean;
+  created_at: string;
+};
+
+export async function fetchBusinesses(category?: string): Promise<DbBusiness[]> {
+  let q = db
+    .from("businesses")
+    .select("*")
+    .order("is_verified", { ascending: false })
+    .order("created_at", { ascending: false })
+    .limit(40);
+  if (category) q = (q as any).eq("category", category);
+  const { data, error } = await q;
+  if (error) throw error;
+  return (data as any[]) ?? [];
+}
+
+export async function createBusiness(
+  ownerId: string,
+  data: { name: string; category: string; description: string; governorate?: string; phone?: string; website?: string }
+): Promise<void> {
+  const { error } = await db.from("businesses").insert({ owner_id: ownerId, ...data });
+  if (error) throw error;
+}
+
+// ── Food places ──────────────────────────────────────────────────
+
+export type DbFoodPlace = {
+  id: string;
+  name: string;
+  cuisine: string;
+  description: string;
+  governorate: string | null;
+  address: string | null;
+  phone: string | null;
+  price_range: string;
+  image_url: string | null;
+  rating: number;
+  is_featured: boolean;
+};
+
+export async function fetchFoodPlaces(cuisine?: string): Promise<DbFoodPlace[]> {
+  let q = db
+    .from("food_places")
+    .select("*")
+    .order("is_featured", { ascending: false })
+    .order("rating", { ascending: false })
+    .limit(40);
+  if (cuisine) q = (q as any).eq("cuisine", cuisine);
+  const { data, error } = await q;
+  if (error) throw error;
+  return (data as any[]) ?? [];
+}
+
+// ── Tourism spots ─────────────────────────────────────────────────
+
+export type DbTourismSpot = {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  governorate: string | null;
+  address: string | null;
+  image_url: string | null;
+  is_featured: boolean;
+};
+
+export async function fetchTourismSpots(category?: string): Promise<DbTourismSpot[]> {
+  let q = db
+    .from("tourism_spots")
+    .select("*")
+    .order("is_featured", { ascending: false })
+    .order("created_at", { ascending: false })
+    .limit(40);
+  if (category) q = (q as any).eq("category", category);
+  const { data, error } = await q;
+  if (error) throw error;
+  return (data as any[]) ?? [];
 }
