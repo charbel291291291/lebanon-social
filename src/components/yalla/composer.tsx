@@ -10,12 +10,14 @@ import { createPost, postsQueryKey, getInitials } from "@/lib/db";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 
+const MAX_POST_LENGTH = 500;
+
 const actions = [
-  { icon: Image, label: "Photo" },
-  { icon: Video, label: "Video" },
-  { icon: BarChart3, label: "Poll" },
-  { icon: MapPin, label: "Location" },
-  { icon: Smile, label: "Feeling" },
+  { icon: Image, label: "Photo", msg: "Photo posts coming soon!" },
+  { icon: Video, label: "Video", msg: "Video posts coming soon!" },
+  { icon: BarChart3, label: "Poll", msg: "Poll creation coming soon!" },
+  { icon: MapPin, label: "Location", msg: "Location tagging coming soon!" },
+  { icon: Smile, label: "Feeling", msg: "Feelings coming soon!" },
 ];
 
 export function Composer() {
@@ -40,9 +42,11 @@ export function Composer() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const remaining = MAX_POST_LENGTH - body.length;
+
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!body.trim()) return;
+    if (!body.trim() || remaining < 0) return;
     mutation.mutate();
   };
 
@@ -62,14 +66,12 @@ export function Composer() {
 
   const displayName =
     profile?.full_name ||
-    (user?.user_metadata?.full_name as string | undefined) ||
+    (user?.user_metadata?.["full_name"] as string | undefined) ||
     user?.email ||
     "";
 
   const avatarUrl =
-    profile?.avatar_url ||
-    (user?.user_metadata?.avatar_url as string | undefined) ||
-    null;
+    profile?.avatar_url || (user?.user_metadata?.["avatar_url"] as string | undefined) || null;
 
   return (
     <section className="glass rounded-3xl p-4">
@@ -87,6 +89,7 @@ export function Composer() {
               ref={inputRef}
               aria-label="Create a post"
               placeholder="Shu fi ma fi? Share something with your community…"
+              dir="auto"
               value={body}
               onChange={(e) => setBody(e.target.value)}
               onFocus={() => setExpanded(true)}
@@ -95,6 +98,7 @@ export function Composer() {
           ) : (
             <Link
               to="/auth"
+              search={{ next: undefined }}
               className="h-11 flex-1 cursor-pointer rounded-full border border-border/60 bg-background/50 px-4 text-sm leading-[2.75rem] text-muted-foreground transition-colors hover:bg-muted/40"
             >
               Shu fi ma fi? Sign in to share…
@@ -102,19 +106,33 @@ export function Composer() {
           )}
 
           {expanded && user && (
-            <Button
-              type="submit"
-              disabled={!body.trim() || mutation.isPending}
-              className="rounded-full px-5 font-semibold"
-            >
-              {mutation.isPending ? "Posting…" : "Post"}
-            </Button>
+            <div className="flex items-center gap-2">
+              {remaining <= 100 && (
+                <span
+                  className={`text-xs font-semibold tabular-nums ${remaining < 0 ? "text-cedar" : "text-muted-foreground"}`}
+                  aria-live="polite"
+                  aria-label={`${remaining} characters remaining`}
+                >
+                  {remaining}
+                </span>
+              )}
+              <Button
+                type="submit"
+                disabled={!body.trim() || mutation.isPending || remaining < 0}
+                className="rounded-full px-5 font-semibold"
+              >
+                {mutation.isPending ? "Posting…" : "Post"}
+              </Button>
+            </div>
           )}
 
           {!expanded && (
             <Button
               type="button"
-              onClick={() => { setExpanded(true); inputRef.current?.focus(); }}
+              onClick={() => {
+                setExpanded(true);
+                inputRef.current?.focus();
+              }}
               className="hidden rounded-full px-5 font-semibold sm:inline-flex"
             >
               Post
@@ -139,7 +157,10 @@ export function Composer() {
                     <button
                       key={t}
                       type="button"
-                      onClick={() => { setTag(t); setShowTagPicker(false); }}
+                      onClick={() => {
+                        setTag(t);
+                        setShowTagPicker(false);
+                      }}
                       className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
                         tag === t
                           ? "bg-primary text-primary-foreground"
@@ -155,10 +176,11 @@ export function Composer() {
 
             {/* Action buttons */}
             <div className="flex flex-wrap gap-1">
-              {actions.map(({ icon: Icon, label }) => (
+              {actions.map(({ icon: Icon, label, msg }) => (
                 <button
                   key={label}
                   type="button"
+                  onClick={() => toast.info(msg)}
                   className="flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent/10 hover:text-accent"
                 >
                   <Icon className="size-4" />
@@ -171,10 +193,11 @@ export function Composer() {
 
         {!expanded && (
           <div className="mt-3 flex flex-wrap gap-1 border-t border-border/50 pt-3">
-            {actions.map(({ icon: Icon, label }) => (
+            {actions.map(({ icon: Icon, label, msg }) => (
               <button
                 key={label}
                 type="button"
+                onClick={() => toast.info(msg)}
                 className="flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent/10 hover:text-accent"
               >
                 <Icon className="size-4" />

@@ -80,13 +80,32 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "FaceLeb — Lebanon's Social Network" },
-      { name: "description", content: "FaceLeb — Lebanon's social network for neighborhoods, universities, food, events and local businesses." },
+      {
+        name: "description",
+        content:
+          "FaceLeb — Lebanon's social network for neighborhoods, universities, food, events and local businesses.",
+      },
       { name: "author", content: "FaceLeb" },
       { property: "og:title", content: "FaceLeb — Lebanon's Social Network" },
-      { property: "og:description", content: "Join FaceLeb — connect with your neighborhood, university, and local community in Lebanon." },
+      {
+        property: "og:description",
+        content:
+          "Join FaceLeb — connect with your neighborhood, university, and local community in Lebanon.",
+      },
       { property: "og:type", content: "website" },
+      {
+        property: "og:image",
+        content: "https://lebanon-social-main.vercel.app/icons/icon-512.png",
+      },
+      { property: "og:image:width", content: "512" },
+      { property: "og:image:height", content: "512" },
+      { property: "og:url", content: "https://lebanon-social-main.vercel.app" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@FaceLeb" },
+      {
+        name: "twitter:image",
+        content: "https://lebanon-social-main.vercel.app/icons/icon-512.png",
+      },
       { name: "theme-color", content: "#1A4BFF" },
       // iOS PWA
       { name: "apple-mobile-web-app-capable", content: "yes" },
@@ -117,6 +136,27 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
       { rel: "manifest", href: "/site.webmanifest" },
     ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "FaceLeb",
+          url: "https://lebanon-social-main.vercel.app",
+          description:
+            "FaceLeb — Lebanon's social network for neighborhoods, universities, food, events and local businesses.",
+          potentialAction: {
+            "@type": "SearchAction",
+            target: {
+              "@type": "EntryPoint",
+              urlTemplate: "https://lebanon-social-main.vercel.app/search?q={search_term_string}",
+            },
+            "query-input": "required name=search_term_string",
+          },
+        }),
+      },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -131,6 +171,12 @@ function RootShell({ children }: { children: ReactNode }) {
         <HeadContent />
       </head>
       <body>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[9999] focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-primary-foreground focus:shadow-lg"
+        >
+          Skip to main content
+        </a>
         {children}
         <Scripts />
       </body>

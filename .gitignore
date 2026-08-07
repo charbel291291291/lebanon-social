@@ -8,6 +8,7 @@ dist/
 .output/
 .vercel/
 .nitro/
+.wrangler/
 
 # Environment — NEVER commit
 .env

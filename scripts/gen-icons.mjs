@@ -26,7 +26,13 @@ for (const size of SIZES) {
 // Apple touch icon (180×180, no transparency — iOS strips alpha)
 await sharp(svgBuffer, { density: 172 })
   .resize(160, 160, { fit: "contain", background: { r: 255, g: 255, b: 255, alpha: 1 } })
-  .extend({ top: 10, bottom: 10, left: 10, right: 10, background: { r: 255, g: 255, b: 255, alpha: 1 } })
+  .extend({
+    top: 10,
+    bottom: 10,
+    left: 10,
+    right: 10,
+    background: { r: 255, g: 255, b: 255, alpha: 1 },
+  })
   .png()
   .toFile(resolve(root, "public", "apple-touch-icon.png"));
 console.log("✓ apple-touch-icon.png");
@@ -38,7 +44,13 @@ const PAD = Math.round((MASK_SIZE - SAFE_ZONE) / 2); // 51px each side
 
 await sharp(svgBuffer, { density: Math.ceil((SAFE_ZONE / 100) * 96) })
   .resize(SAFE_ZONE, SAFE_ZONE, { fit: "contain", background: { r: 26, g: 75, b: 255, alpha: 1 } })
-  .extend({ top: PAD, bottom: PAD, left: PAD, right: PAD, background: { r: 26, g: 75, b: 255, alpha: 1 } })
+  .extend({
+    top: PAD,
+    bottom: PAD,
+    left: PAD,
+    right: PAD,
+    background: { r: 26, g: 75, b: 255, alpha: 1 },
+  })
   .png()
   .toFile(resolve(outDir, "icon-maskable-512.png"));
 console.log("✓ icon-maskable-512.png");
@@ -49,7 +61,13 @@ const S192 = Math.round(M192 * 0.8);
 const P192 = Math.round((M192 - S192) / 2);
 await sharp(svgBuffer, { density: Math.ceil((S192 / 100) * 96) })
   .resize(S192, S192, { fit: "contain", background: { r: 26, g: 75, b: 255, alpha: 1 } })
-  .extend({ top: P192, bottom: P192, left: P192, right: P192, background: { r: 26, g: 75, b: 255, alpha: 1 } })
+  .extend({
+    top: P192,
+    bottom: P192,
+    left: P192,
+    right: P192,
+    background: { r: 26, g: 75, b: 255, alpha: 1 },
+  })
   .png()
   .toFile(resolve(outDir, "icon-maskable-192.png"));
 console.log("✓ icon-maskable-192.png");

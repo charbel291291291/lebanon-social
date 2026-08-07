@@ -18,6 +18,7 @@ import { Route as CommunitiesRouteImport } from './routes/communities'
 import { Route as EventsRouteImport } from './routes/events'
 import { Route as FoodRouteImport } from './routes/food'
 import { Route as MarketplaceRouteImport } from './routes/marketplace'
+import { Route as SearchRouteImport } from './routes/search'
 import { Route as TourismRouteImport } from './routes/tourism'
 import { Route as TrendingRouteImport } from './routes/trending'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
@@ -67,6 +68,11 @@ const MarketplaceRoute = MarketplaceRouteImport.update({
   path: '/marketplace',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SearchRoute = SearchRouteImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TourismRoute = TourismRouteImport.update({
   id: '/tourism',
   path: '/tourism',
@@ -97,6 +103,7 @@ export interface FileRoutesByFullPath {
   '/events': typeof EventsRoute
   '/food': typeof FoodRoute
   '/marketplace': typeof MarketplaceRoute
+  '/search': typeof SearchRoute
   '/tourism': typeof TourismRoute
   '/trending': typeof TrendingRoute
   '/settings': typeof AuthenticatedSettingsRoute
@@ -111,6 +118,7 @@ export interface FileRoutesByTo {
   '/events': typeof EventsRoute
   '/food': typeof FoodRoute
   '/marketplace': typeof MarketplaceRoute
+  '/search': typeof SearchRoute
   '/tourism': typeof TourismRoute
   '/trending': typeof TrendingRoute
   '/settings': typeof AuthenticatedSettingsRoute
@@ -127,6 +135,7 @@ export interface FileRoutesById {
   '/events': typeof EventsRoute
   '/food': typeof FoodRoute
   '/marketplace': typeof MarketplaceRoute
+  '/search': typeof SearchRoute
   '/tourism': typeof TourismRoute
   '/trending': typeof TrendingRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
@@ -143,6 +152,7 @@ export interface FileRouteTypes {
     | '/events'
     | '/food'
     | '/marketplace'
+    | '/search'
     | '/tourism'
     | '/trending'
     | '/settings'
@@ -157,6 +167,7 @@ export interface FileRouteTypes {
     | '/events'
     | '/food'
     | '/marketplace'
+    | '/search'
     | '/tourism'
     | '/trending'
     | '/settings'
@@ -172,6 +183,7 @@ export interface FileRouteTypes {
     | '/events'
     | '/food'
     | '/marketplace'
+    | '/search'
     | '/tourism'
     | '/trending'
     | '/_authenticated/settings'
@@ -188,6 +200,7 @@ export interface RootRouteChildren {
   EventsRoute: typeof EventsRoute
   FoodRoute: typeof FoodRoute
   MarketplaceRoute: typeof MarketplaceRoute
+  SearchRoute: typeof SearchRoute
   TourismRoute: typeof TourismRoute
   TrendingRoute: typeof TrendingRoute
   UUsernameRoute: typeof UUsernameRoute
@@ -258,6 +271,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MarketplaceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/search': {
+      id: '/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/tourism': {
       id: '/tourism'
       path: '/tourism'
@@ -310,6 +330,7 @@ const rootRouteChildren: RootRouteChildren = {
   EventsRoute: EventsRoute,
   FoodRoute: FoodRoute,
   MarketplaceRoute: MarketplaceRoute,
+  SearchRoute: SearchRoute,
   TourismRoute: TourismRoute,
   TrendingRoute: TrendingRoute,
   UUsernameRoute: UUsernameRoute,

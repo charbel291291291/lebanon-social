@@ -1,5 +1,5 @@
 // FaceLeb Service Worker — cache-first for assets, network-first for navigation
-const CACHE_VERSION = "v1";
+const CACHE_VERSION = "v2";
 const STATIC_CACHE = `fl-static-${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `fl-dynamic-${CACHE_VERSION}`;
 const OFFLINE_URL = "/offline.html";
@@ -19,7 +19,7 @@ self.addEventListener("install", (event) => {
     caches
       .open(STATIC_CACHE)
       .then((cache) => cache.addAll(PRECACHE))
-      .then(() => self.skipWaiting())
+      .then(() => self.skipWaiting()),
   );
 });
 
@@ -32,10 +32,10 @@ self.addEventListener("activate", (event) => {
         Promise.all(
           keys
             .filter((k) => k !== STATIC_CACHE && k !== DYNAMIC_CACHE)
-            .map((k) => caches.delete(k))
-        )
+            .map((k) => caches.delete(k)),
+        ),
       )
-      .then(() => self.clients.claim())
+      .then(() => self.clients.claim()),
   );
 });
 
@@ -113,8 +113,7 @@ async function navigationHandler(request) {
     const response = await fetch(request);
     return response;
   } catch {
-    const cached = await caches.match(request);
-    if (cached) return cached;
+    // Never serve a cached page for a different URL — always use the offline page
     const offline = await caches.match(OFFLINE_URL);
     return (
       offline ??
@@ -151,7 +150,7 @@ self.addEventListener("push", (event) => {
       data: { url },
       vibrate: [200, 100, 200],
       requireInteraction: false,
-    })
+    }),
   );
 });
 
@@ -159,16 +158,14 @@ self.addEventListener("notificationclick", (event) => {
   event.notification.close();
   const targetUrl = event.notification.data?.url ?? "/";
   event.waitUntil(
-    clients
-      .matchAll({ type: "window", includeUncontrolled: true })
-      .then((clientList) => {
-        for (const client of clientList) {
-          if (client.url === targetUrl && "focus" in client) {
-            return client.focus();
-          }
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if (client.url === targetUrl && "focus" in client) {
+          return client.focus();
         }
-        return clients.openWindow(targetUrl);
-      })
+      }
+      return clients.openWindow(targetUrl);
+    }),
   );
 });
 

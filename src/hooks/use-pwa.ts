@@ -21,13 +21,13 @@ let pendingWorker: ServiceWorker | null = null;
 export function usePWA(): PWAState {
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
-  const [isOnline, setIsOnline] = useState(
-    typeof navigator !== "undefined" ? navigator.onLine : true
-  );
+  // Start optimistic (true) — don't trust navigator.onLine on mount,
+  // it flickers false on slow connections and behind proxies.
+  const [isOnline, setIsOnline] = useState(true);
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [notificationPermission, setNotificationPermission] =
     useState<NotificationPermission | null>(
-      typeof Notification !== "undefined" ? Notification.permission : null
+      typeof Notification !== "undefined" ? Notification.permission : null,
     );
 
   useEffect(() => {
@@ -35,6 +35,7 @@ export function usePWA(): PWAState {
 
     // ── Detect standalone (already installed) ──────────────────────────────
     const mq = window.matchMedia("(display-mode: standalone)");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setIsInstalled(mq.matches || (navigator as any).standalone === true);
     const mqHandler = (e: MediaQueryListEvent) => setIsInstalled(e.matches);
     mq.addEventListener("change", mqHandler);
@@ -50,9 +51,19 @@ export function usePWA(): PWAState {
       setInstallPrompt(null);
     });
 
-    // ── Online / offline ───────────────────────────────────────────────────
-    const goOnline = () => setIsOnline(true);
-    const goOffline = () => setIsOnline(false);
+    // ── Online / offline — debounced to avoid false flickers ──────────────
+    let offlineTimer: ReturnType<typeof setTimeout> | null = null;
+    const goOnline = () => {
+      if (offlineTimer) {
+        clearTimeout(offlineTimer);
+        offlineTimer = null;
+      }
+      setIsOnline(true);
+    };
+    const goOffline = () => {
+      // Wait 4 s before declaring offline to avoid transient drops
+      offlineTimer = setTimeout(() => setIsOnline(false), 4000);
+    };
     window.addEventListener("online", goOnline);
     window.addEventListener("offline", goOffline);
 
@@ -118,13 +129,12 @@ export function usePWA(): PWAState {
     // controllerchange listener above handles the reload
   }, []);
 
-  const requestNotificationPermission =
-    useCallback(async (): Promise<NotificationPermission> => {
-      if (typeof Notification === "undefined") return "denied";
-      const perm = await Notification.requestPermission();
-      setNotificationPermission(perm);
-      return perm;
-    }, []);
+  const requestNotificationPermission = useCallback(async (): Promise<NotificationPermission> => {
+    if (typeof Notification === "undefined") return "denied";
+    const perm = await Notification.requestPermission();
+    setNotificationPermission(perm);
+    return perm;
+  }, []);
 
   return {
     canInstall: !!installPrompt && !isInstalled,

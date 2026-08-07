@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
-import { Sparkles, Clock3, Loader2 } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Sparkles, Clock3, Store, Building2, UtensilsCrossed, Mountain } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { TopBar } from "@/components/yalla/top-bar";
 import { LeftNav } from "@/components/yalla/left-nav";
@@ -23,8 +23,10 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: title },
       { property: "og:description", content: description },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://lebanon-social-main.vercel.app/" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: "https://lebanon-social-main.vercel.app/" }],
   }),
   component: Index,
 });
@@ -51,7 +53,11 @@ function Index() {
   const [mode, setMode] = useState<"smart" | "recent">("smart");
   const { user } = useAuth();
 
-  const { data: posts = [], isLoading, isError } = useQuery({
+  const {
+    data: posts = [],
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: postsQueryKey(user?.id),
     queryFn: () => fetchPosts(user?.id),
   });
@@ -61,7 +67,7 @@ function Index() {
   return (
     <div className="min-h-screen">
       <TopBar />
-      <main className="mx-auto flex max-w-[1400px] gap-6 px-4 py-6">
+      <main id="main-content" className="mx-auto flex max-w-[1400px] gap-6 px-4 py-6">
         <LeftNav />
 
         <div className="mx-auto w-full max-w-2xl space-y-4">
@@ -103,18 +109,36 @@ function Index() {
           {isError && (
             <div className="glass rounded-3xl p-8 text-center">
               <p className="text-sm text-muted-foreground">
-                Couldn't load posts. Make sure you've run the SQL migration in Supabase.
+                Couldn't load posts. Try refreshing the page.
               </p>
             </div>
           )}
 
           {!isLoading && !isError && list.length === 0 && (
-            <div className="glass rounded-3xl p-10 text-center space-y-2">
-              <p className="text-2xl">🌲</p>
-              <p className="font-semibold">Be the first to post!</p>
-              <p className="text-sm text-muted-foreground">
-                Share what's happening in your neighborhood, university, or city.
+            <div className="glass rounded-3xl p-10 text-center space-y-3">
+              <p className="text-3xl">🇱🇧</p>
+              <p className="font-semibold text-lg">Lebanon's social network</p>
+              <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+                Connect with your neighborhood, university, and city. Share posts, discover local
+                businesses, events, and food.
               </p>
+              <div className="flex flex-wrap justify-center gap-2 pt-1">
+                {[
+                  { to: "/marketplace", icon: Store, label: "Marketplace" },
+                  { to: "/businesses", icon: Building2, label: "Businesses" },
+                  { to: "/food", icon: UtensilsCrossed, label: "Food" },
+                  { to: "/tourism", icon: Mountain, label: "Tourism" },
+                ].map(({ to, icon: Icon, label }) => (
+                  <Link
+                    key={to}
+                    to={to}
+                    className="flex items-center gap-1.5 rounded-full border border-border/60 bg-background/60 px-3 py-1.5 text-xs font-medium text-foreground/80 transition-colors hover:border-primary/40 hover:text-primary"
+                  >
+                    <Icon className="size-3.5" />
+                    {label}
+                  </Link>
+                ))}
+              </div>
             </div>
           )}
 
@@ -127,6 +151,11 @@ function Index() {
               You're all caught up · يلا نكمل بكرا
             </p>
           )}
+
+          {/* Mobile discovery — mirrors right rail, visible below xl breakpoint */}
+          <div className="xl:hidden">
+            <RightRail inline />
+          </div>
         </div>
 
         <RightRail />

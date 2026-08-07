@@ -1,4 +1,5 @@
 import { Plus } from "lucide-react";
+import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { fetchStories, storiesQueryKey, getInitials, type DbStory } from "@/lib/db";
@@ -8,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 function StoryCard({ story, i }: { story: DbStory; i: number }) {
   return (
     <button
+      aria-label={`${story.author.full_name || story.author.username}'s story`}
       style={{ animationDelay: `${i * 45}ms` }}
       className="group relative h-40 w-26 min-w-[6.5rem] shrink-0 animate-rise overflow-hidden rounded-2xl ring-1 ring-border/60 transition-transform duration-300 hover:-translate-y-1"
     >
@@ -53,20 +55,26 @@ export function Stories() {
 
   const displayName =
     profile?.full_name ||
-    (user?.user_metadata?.full_name as string | undefined) ||
+    (user?.user_metadata?.["full_name"] as string | undefined) ||
     user?.email ||
     "";
 
   const avatarUrl =
-    profile?.avatar_url ||
-    (user?.user_metadata?.avatar_url as string | undefined) ||
-    null;
+    profile?.avatar_url || (user?.user_metadata?.["avatar_url"] as string | undefined) || null;
 
   return (
     <section aria-label="Stories" className="glass rounded-3xl p-3">
       <div className="flex gap-3 overflow-x-auto pb-1 [scrollbar-width:none]">
         {/* "Add your story" card — always first */}
-        <button className="group relative h-40 w-26 min-w-[6.5rem] shrink-0 animate-rise overflow-hidden rounded-2xl ring-1 ring-border/60 transition-transform duration-300 hover:-translate-y-1">
+        <button
+          onClick={() =>
+            user
+              ? toast.info("Story creation coming soon!")
+              : toast.info("Sign in to create a story")
+          }
+          aria-label="Add your story"
+          className="group relative h-40 w-26 min-w-[6.5rem] shrink-0 animate-rise overflow-hidden rounded-2xl ring-1 ring-border/60 transition-transform duration-300 hover:-translate-y-1"
+        >
           <div className="size-full bg-gradient-to-br from-primary/20 to-accent/20" />
           <span className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
           <span className="absolute left-1/2 top-3 grid size-8 -translate-x-1/2 place-items-center rounded-full bg-primary text-primary-foreground shadow-lift">

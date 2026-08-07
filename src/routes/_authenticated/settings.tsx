@@ -20,6 +20,9 @@ import {
 } from "@/components/ui/select";
 import { governorates } from "@/lib/yalla-data";
 import { ensureProfile, slugifyUsername, uploadProfileMedia, type Profile } from "@/lib/profile";
+import { normalizeUrl, isValidHttpUrl } from "@/lib/url";
+
+const ALLOWED_MIME = ["image/jpeg", "image/png", "image/gif", "image/webp", "image/avif"];
 
 const title = "Your profile settings — FaceLeb";
 const description =
@@ -34,6 +37,7 @@ export const Route = createFileRoute("/_authenticated/settings")({
       { property: "og:description", content: description },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "robots", content: "noindex, nofollow" },
     ],
   }),
   component: SettingsPage,
@@ -61,6 +65,14 @@ function SettingsPage() {
 
   const pick = async (kind: "avatar" | "cover", file?: File) => {
     if (!file || !form) return;
+    if (!ALLOWED_MIME.includes(file.type)) {
+      toast.error("Please upload a JPEG, PNG, GIF, WebP, or AVIF image.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be smaller than 5 MB.");
+      return;
+    }
     setUploading(kind);
     try {
       const path = await uploadProfileMedia(user.id, kind, file);
@@ -80,17 +92,23 @@ function SettingsPage() {
       toast.error("Username needs at least 3 letters or numbers.");
       return;
     }
+    const rawWebsite = form.website?.trim() ?? "";
+    const website = rawWebsite ? normalizeUrl(rawWebsite) : null;
+    if (website && !isValidHttpUrl(website)) {
+      toast.error("Please enter a valid website URL.");
+      return;
+    }
     setSaving(true);
     const { error } = await supabase
       .from("profiles")
       .update({
         username,
-        full_name: form.full_name,
-        bio: form.bio,
+        full_name: form.full_name.trim(),
+        bio: form.bio?.trim() ?? null,
         avatar_url: form.avatar_url,
         cover_url: form.cover_url,
         governorate: form.governorate,
-        website: form.website,
+        website,
         is_private: form.is_private,
         show_governorate: form.show_governorate,
         allow_messages: form.allow_messages,
@@ -103,6 +121,7 @@ function SettingsPage() {
       return;
     }
     queryClient.invalidateQueries({ queryKey: ["my-profile", user.id] });
+    queryClient.invalidateQueries({ queryKey: ["my-profile-nav", user.id] });
     queryClient.invalidateQueries({ queryKey: ["profile", username] });
     toast.success("Profile saved.");
   };
@@ -117,7 +136,7 @@ function SettingsPage() {
     return (
       <div className="min-h-screen">
         <TopBar />
-        <main className="mx-auto max-w-3xl px-4 py-6">
+        <main id="main-content" className="mx-auto max-w-3xl px-4 py-6">
           <div className="glass h-72 animate-pulse rounded-3xl" />
         </main>
       </div>
@@ -150,8 +169,8 @@ function SettingsPage() {
   return (
     <div className="min-h-screen">
       <TopBar />
-      <main className="mx-auto max-w-3xl space-y-4 px-4 py-6">
-        <ProfileView profile={form} isOwner={false} />
+      <main id="main-content" className="mx-auto max-w-3xl space-y-4 px-4 py-6">
+        <ProfileView profile={form} isOwner={true} />
 
         <section className="glass space-y-5 rounded-3xl p-5">
           <div className="flex items-center justify-between gap-3">
@@ -257,20 +276,17 @@ function SettingsPage() {
         </section>
 
         <section className="glass space-y-3 rounded-3xl p-5">
-          <h2 className="font-[family-name:var(--font-display)] text-lg font-extrabold">
-            Privacy
-          </h2>
+          <h2 className="font-[family-name:var(--font-display)] text-lg font-extrabold">Privacy</h2>
           {privacy.map(({ key, label, hint }) => (
-            <div key={key} className="flex items-center justify-between gap-4 rounded-2xl bg-background/40 p-3">
+            <div
+              key={key}
+              className="flex items-center justify-between gap-4 rounded-2xl bg-background/40 p-3"
+            >
               <div>
                 <p className="text-sm font-semibold">{label}</p>
                 <p className="text-xs text-muted-foreground">{hint}</p>
               </div>
-              <Switch
-                checked={form[key]}
-                onCheckedChange={(v) => set(key, v)}
-                aria-label={label}
-              />
+              <Switch checked={form[key]} onCheckedChange={(v) => set(key, v)} aria-label={label} />
             </div>
           ))}
         </section>

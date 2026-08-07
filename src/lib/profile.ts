@@ -5,17 +5,19 @@ export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 
 export const BUCKET = "profile-media";
 
-const signedCache = new Map<string, string>();
+// Signed URLs expire after 1 h — cache them with a TTL so we re-sign before expiry
+const SIGNED_TTL_MS = 55 * 60 * 1000; // re-sign 5 min before the 1-h expiry
+const signedCache = new Map<string, { url: string; expiresAt: number }>();
 
 /** Profile media lives in a private bucket, so resolve storage paths to signed URLs. */
 export async function resolveMedia(path: string | null | undefined) {
   if (!path) return null;
   if (path.startsWith("http")) return path;
-  const cached = signedCache.get(path);
-  if (cached) return cached;
+  const entry = signedCache.get(path);
+  if (entry && Date.now() < entry.expiresAt) return entry.url;
   const { data } = await supabase.storage.from(BUCKET).createSignedUrl(path, 60 * 60);
   if (!data?.signedUrl) return null;
-  signedCache.set(path, data.signedUrl);
+  signedCache.set(path, { url: data.signedUrl, expiresAt: Date.now() + SIGNED_TTL_MS });
   return data.signedUrl;
 }
 

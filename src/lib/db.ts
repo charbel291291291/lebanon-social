@@ -1,17 +1,18 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabase } from "@/integrations/supabase/client";
 import type { ReactionKey } from "./yalla-data";
 
 // ── Query keys ──────────────────────────────────────────────────
 
-export const postsQueryKey    = (uid?: string)      => ["posts",       uid ?? "anon"] as const;
-export const storiesQueryKey  = (uid?: string)      => ["stories",     uid ?? "anon"] as const;
-export const commQueryKey     = (uid?: string)      => ["communities", uid ?? "anon"] as const;
-export const eventsQueryKey   = (uid?: string)      => ["events",      uid ?? "anon"] as const;
-export const trendsQueryKey   = ()                  => ["trends"]                     as const;
-export const listingsQueryKey = (cat?: string)      => ["listings",    cat ?? "all"]  as const;
-export const businessesQueryKey = (cat?: string)    => ["businesses",  cat ?? "all"]  as const;
-export const foodQueryKey     = (cuisine?: string)  => ["food",        cuisine ?? "all"] as const;
-export const tourismQueryKey  = (cat?: string)      => ["tourism",     cat ?? "all"]  as const;
+export const postsQueryKey = (uid?: string) => ["posts", uid ?? "anon"] as const;
+export const storiesQueryKey = (uid?: string) => ["stories", uid ?? "anon"] as const;
+export const commQueryKey = (uid?: string) => ["communities", uid ?? "anon"] as const;
+export const eventsQueryKey = (uid?: string) => ["events", uid ?? "anon"] as const;
+export const trendsQueryKey = () => ["trends"] as const;
+export const listingsQueryKey = (cat?: string) => ["listings", cat ?? "all"] as const;
+export const businessesQueryKey = (cat?: string) => ["businesses", cat ?? "all"] as const;
+export const foodQueryKey = (cuisine?: string) => ["food", cuisine ?? "all"] as const;
+export const tourismQueryKey = (cat?: string) => ["tourism", cat ?? "all"] as const;
 
 // ── Display types ───────────────────────────────────────────────
 
@@ -85,7 +86,6 @@ export type DbTrend = {
 
 // ── Client helpers ──────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = supabase as any;
 
 export function getInitials(name: string): string {
@@ -112,13 +112,15 @@ export function relativeTime(iso: string): string {
 export async function fetchPosts(userId?: string): Promise<DbPost[]> {
   const { data, error } = await db
     .from("posts")
-    .select(`
+    .select(
+      `
       id, body, image_url, tag, place, governorate, created_at,
       author:profiles!posts_author_id_fkey(id, username, full_name, avatar_url, is_verified),
       post_reactions(reaction, user_id),
       comments(id),
       polls(id, question, poll_options(id, label, position, poll_votes(user_id, option_id)))
-    `)
+    `,
+    )
     .order("created_at", { ascending: false })
     .limit(20);
 
@@ -177,10 +179,12 @@ export async function fetchPosts(userId?: string): Promise<DbPost[]> {
 export async function fetchStories(): Promise<DbStory[]> {
   const { data, error } = await db
     .from("stories")
-    .select(`
+    .select(
+      `
       id, image_url, expires_at,
       author:profiles!stories_author_id_fkey(id, username, full_name, avatar_url, is_verified)
-    `)
+    `,
+    )
     .order("created_at", { ascending: false })
     .limit(20);
 
@@ -228,9 +232,7 @@ export async function fetchEvents(userId?: string): Promise<DbEvent[]> {
     starts_at: row.starts_at,
     attendee_count: (row.event_attendees ?? []).filter((a: any) => a.status === "going").length,
     is_attending: userId
-      ? (row.event_attendees ?? []).some(
-          (a: any) => a.user_id === userId && a.status === "going"
-        )
+      ? (row.event_attendees ?? []).some((a: any) => a.user_id === userId && a.status === "going")
       : false,
   }));
 }
@@ -252,7 +254,7 @@ export async function createPost(
   authorId: string,
   body: string,
   tag: string,
-  opts?: { image_url?: string; place?: string; governorate?: string }
+  opts?: { image_url?: string; place?: string; governorate?: string },
 ): Promise<void> {
   const { error } = await db.from("posts").insert({
     author_id: authorId,
@@ -267,7 +269,7 @@ export async function toggleReaction(
   postId: string,
   userId: string,
   reaction: ReactionKey,
-  currentReaction: ReactionKey | null
+  currentReaction: ReactionKey | null,
 ): Promise<void> {
   if (currentReaction === reaction) {
     const { error } = await db
@@ -284,11 +286,7 @@ export async function toggleReaction(
   }
 }
 
-export async function votePoll(
-  pollId: string,
-  userId: string,
-  optionId: string
-): Promise<void> {
+export async function votePoll(pollId: string, userId: string, optionId: string): Promise<void> {
   const { error } = await db
     .from("poll_votes")
     .upsert({ poll_id: pollId, user_id: userId, option_id: optionId });
@@ -314,7 +312,7 @@ export async function leaveCommunity(communityId: string, userId: string): Promi
 export async function rsvpEvent(
   eventId: string,
   userId: string,
-  status: "going" | "interested" | "not_going"
+  status: "going" | "interested" | "not_going",
 ): Promise<void> {
   const { error } = await db
     .from("event_attendees")
@@ -343,7 +341,9 @@ export type DbListing = {
 export async function fetchListings(category?: string): Promise<DbListing[]> {
   let q = db
     .from("marketplace_listings")
-    .select("*, seller:profiles!marketplace_listings_seller_id_fkey(id, username, full_name, avatar_url, is_verified)")
+    .select(
+      "*, seller:profiles!marketplace_listings_seller_id_fkey(id, username, full_name, avatar_url, is_verified)",
+    )
     .eq("status", "active")
     .order("created_at", { ascending: false })
     .limit(40);
@@ -356,9 +356,14 @@ export async function fetchListings(category?: string): Promise<DbListing[]> {
 export async function createListing(
   sellerId: string,
   data: {
-    title: string; description: string; price: number | null;
-    currency: string; category: string; condition: string; governorate?: string;
-  }
+    title: string;
+    description: string;
+    price: number | null;
+    currency: string;
+    category: string;
+    condition: string;
+    governorate?: string;
+  },
 ): Promise<void> {
   const { error } = await db.from("marketplace_listings").insert({ seller_id: sellerId, ...data });
   if (error) throw error;
@@ -395,7 +400,14 @@ export async function fetchBusinesses(category?: string): Promise<DbBusiness[]> 
 
 export async function createBusiness(
   ownerId: string,
-  data: { name: string; category: string; description: string; governorate?: string; phone?: string; website?: string }
+  data: {
+    name: string;
+    category: string;
+    description: string;
+    governorate?: string;
+    phone?: string;
+    website?: string;
+  },
 ): Promise<void> {
   const { error } = await db.from("businesses").insert({ owner_id: ownerId, ...data });
   if (error) throw error;
@@ -428,6 +440,43 @@ export async function fetchFoodPlaces(cuisine?: string): Promise<DbFoodPlace[]> 
   const { data, error } = await q;
   if (error) throw error;
   return (data as any[]) ?? [];
+}
+
+// ── Comments ─────────────────────────────────────────────────────
+
+export type DbComment = {
+  id: string;
+  body: string;
+  created_at: string;
+  author: DbAuthor;
+};
+
+export async function fetchComments(postId: string): Promise<DbComment[]> {
+  const { data, error } = await db
+    .from("comments")
+    .select(
+      `
+      id, body, created_at,
+      author:profiles!comments_author_id_fkey(id, username, full_name, avatar_url, is_verified)
+    `,
+    )
+    .eq("post_id", postId)
+    .order("created_at", { ascending: true })
+    .limit(50);
+  if (error) throw error;
+  return (data as any[]) ?? [];
+}
+
+export async function addComment(postId: string, userId: string, body: string): Promise<DbComment> {
+  const { data, error } = await db
+    .from("comments")
+    .insert({ post_id: postId, author_id: userId, body })
+    .select(
+      `id, body, created_at, author:profiles!comments_author_id_fkey(id, username, full_name, avatar_url, is_verified)`,
+    )
+    .single();
+  if (error) throw error;
+  return data as DbComment;
 }
 
 // ── Tourism spots ─────────────────────────────────────────────────

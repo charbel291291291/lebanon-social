@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { BadgeCheck, Globe, Lock, MapPin, MessageCircle, Settings2 } from "lucide-react";
+import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -40,7 +41,13 @@ export function ProfileView({ profile, isOwner }: { profile: Profile; isOwner: b
       <div className="relative px-5 pb-6">
         <div className="-mt-12 flex flex-wrap items-end justify-between gap-4">
           <Avatar className="size-24 rounded-3xl ring-4 ring-background">
-            {avatar && <AvatarImage src={avatar} alt={`${profile.username} avatar`} className="object-cover" />}
+            {avatar && (
+              <AvatarImage
+                src={avatar}
+                alt={`${profile.username} avatar`}
+                className="object-cover"
+              />
+            )}
             <AvatarFallback className="rounded-3xl bg-primary/15 text-xl font-bold text-primary">
               {initials(profile)}
             </AvatarFallback>
@@ -55,7 +62,11 @@ export function ProfileView({ profile, isOwner }: { profile: Profile; isOwner: b
               </Button>
             ) : (
               profile.allow_messages && (
-                <Button variant="outline" className="rounded-full">
+                <Button
+                  variant="outline"
+                  className="rounded-full"
+                  onClick={() => toast.info("Messages coming soon!")}
+                >
                   <MessageCircle className="size-4" /> Message
                 </Button>
               )
@@ -85,7 +96,7 @@ export function ProfileView({ profile, isOwner }: { profile: Profile; isOwner: b
                 <MapPin className="mr-1 size-3" /> {profile.governorate}
               </Badge>
             )}
-            {profile.website && (
+            {profile.website && /^https?:\/\//i.test(profile.website) && (
               <a
                 href={profile.website}
                 target="_blank"

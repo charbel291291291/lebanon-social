@@ -17,7 +17,17 @@ export const Route = createFileRoute("/u/$username")({
         { property: "og:title", content: title },
         { property: "og:description", content: description },
         { property: "og:type", content: "profile" },
+        {
+          property: "og:url",
+          content: `https://lebanon-social-main.vercel.app/u/${params.username}`,
+        },
         { name: "twitter:card", content: "summary_large_image" },
+      ],
+      links: [
+        {
+          rel: "canonical",
+          href: `https://lebanon-social-main.vercel.app/u/${params.username}`,
+        },
       ],
     };
   },
@@ -44,7 +54,7 @@ function ProfilePage() {
   return (
     <div className="min-h-screen">
       <TopBar />
-      <main className="mx-auto max-w-3xl space-y-4 px-4 py-6">
+      <main id="main-content" className="mx-auto max-w-3xl space-y-4 px-4 py-6">
         {isLoading && <div className="glass h-72 animate-pulse rounded-3xl" />}
 
         {!isLoading && !data && (

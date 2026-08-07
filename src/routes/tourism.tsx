@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { MapPin, Mountain } from "lucide-react";
 import { TopBar } from "@/components/yalla/top-bar";
 import { LeftNav } from "@/components/yalla/left-nav";
+import { RightRail } from "@/components/yalla/right-rail";
 import { fetchTourismSpots, tourismQueryKey, type DbTourismSpot } from "@/lib/db";
 
 export const Route = createFileRoute("/tourism")({
@@ -11,15 +12,29 @@ export const Route = createFileRoute("/tourism")({
     meta: [
       { title: "Tourism & Travel — FaceLeb" },
       { name: "description", content: "Discover Lebanon's most beautiful places and attractions." },
+      { property: "og:title", content: "Tourism & Travel — FaceLeb" },
+      {
+        property: "og:description",
+        content: "Discover Lebanon's most beautiful places and attractions.",
+      },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://lebanon-social-main.vercel.app/tourism" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: "https://lebanon-social-main.vercel.app/tourism" }],
   }),
   component: TourismPage,
 });
 
 const CATEGORIES = ["All", "Historical", "Nature", "Religious", "Beach", "Cave", "Ski", "Cultural"];
 const CAT_EMOJI: Record<string, string> = {
-  Historical: "🏛️", Nature: "🌿", Religious: "⛪", Beach: "🏖️",
-  Cave: "🪨", Ski: "🎿", Cultural: "🎨",
+  Historical: "🏛️",
+  Nature: "🌿",
+  Religious: "⛪",
+  Beach: "🏖️",
+  Cave: "🪨",
+  Ski: "🎿",
+  Cultural: "🎨",
 };
 const CAT_GRADIENT: Record<string, string> = {
   Historical: "from-amber-400/20 to-orange-400/20",
@@ -37,9 +52,16 @@ function SpotCard({ spot }: { spot: DbTourismSpot }) {
   return (
     <article className="glass flex flex-col overflow-hidden rounded-3xl transition-shadow hover:shadow-lift">
       {spot.image_url ? (
-        <img src={spot.image_url} alt={spot.name} className="h-44 w-full object-cover" loading="lazy" />
+        <img
+          src={spot.image_url}
+          alt={spot.name}
+          className="h-44 w-full object-cover"
+          loading="lazy"
+        />
       ) : (
-        <div className={`flex h-44 items-center justify-center bg-gradient-to-br ${gradient} text-5xl`}>
+        <div
+          className={`flex h-44 items-center justify-center bg-gradient-to-br ${gradient} text-5xl`}
+        >
           {emoji}
         </div>
       )}
@@ -48,15 +70,21 @@ function SpotCard({ spot }: { spot: DbTourismSpot }) {
           <div>
             <p className="font-semibold">{spot.name}</p>
             {spot.is_featured && (
-              <span className="text-[10px] font-bold uppercase tracking-wide text-gold">★ Must-see</span>
+              <span className="text-[10px] font-bold uppercase tracking-wide text-gold">
+                ★ Must-see
+              </span>
             )}
           </div>
-          <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold bg-gradient-to-r ${gradient} border border-border/40`}>
+          <span
+            className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold bg-gradient-to-r ${gradient} border border-border/40`}
+          >
             {emoji} {spot.category}
           </span>
         </div>
         {spot.description && (
-          <p className="line-clamp-3 text-xs text-muted-foreground leading-relaxed">{spot.description}</p>
+          <p className="line-clamp-3 text-xs text-muted-foreground leading-relaxed">
+            {spot.description}
+          </p>
         )}
         <div className="mt-auto flex flex-wrap gap-3 pt-1 text-xs text-muted-foreground">
           {spot.governorate && (
@@ -85,12 +113,14 @@ function TourismPage() {
   return (
     <div className="min-h-screen">
       <TopBar />
-      <main className="mx-auto flex max-w-[1400px] gap-6 px-4 py-6">
+      <main id="main-content" className="mx-auto flex max-w-[1400px] gap-6 px-4 py-6">
         <LeftNav />
         <div className="flex-1 space-y-6">
           <div>
             <h1 className="text-2xl font-bold">Tourism & Travel 🇱🇧</h1>
-            <p className="text-sm text-muted-foreground">Discover Lebanon's most beautiful places</p>
+            <p className="text-sm text-muted-foreground">
+              Discover Lebanon's most beautiful places
+            </p>
           </div>
 
           {/* Category filter */}
@@ -126,7 +156,9 @@ function TourismPage() {
               </div>
               <p className="font-semibold text-lg">No spots found</p>
               <p className="text-sm text-muted-foreground">
-                Run the SQL migration to load tourism data.
+                {category === "All"
+                  ? "Tourism spots coming soon — check back shortly."
+                  : `No ${category} spots found yet.`}
               </p>
             </div>
           )}
@@ -138,7 +170,9 @@ function TourismPage() {
                 ★ Must-see destinations
               </h2>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {featured.map((s) => <SpotCard key={s.id} spot={s} />)}
+                {featured.map((s) => (
+                  <SpotCard key={s.id} spot={s} />
+                ))}
               </div>
             </div>
           )}
@@ -152,11 +186,14 @@ function TourismPage() {
                 </h2>
               )}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {(category !== "All" ? spots : rest).map((s) => <SpotCard key={s.id} spot={s} />)}
+                {(category !== "All" ? spots : rest).map((s) => (
+                  <SpotCard key={s.id} spot={s} />
+                ))}
               </div>
             </div>
           )}
         </div>
+        <RightRail />
       </main>
     </div>
   );

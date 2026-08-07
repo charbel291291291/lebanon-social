@@ -4,6 +4,7 @@ import { Users } from "lucide-react";
 import { toast } from "sonner";
 import { TopBar } from "@/components/yalla/top-bar";
 import { LeftNav } from "@/components/yalla/left-nav";
+import { RightRail } from "@/components/yalla/right-rail";
 import { Button } from "@/components/ui/button";
 import {
   fetchCommunities,
@@ -19,12 +20,24 @@ export const Route = createFileRoute("/communities")({
     meta: [
       { title: "Communities — FaceLeb" },
       { name: "description", content: "Discover and join Lebanese communities on FaceLeb." },
+      { property: "og:title", content: "Communities — FaceLeb" },
+      { property: "og:description", content: "Discover and join Lebanese communities on FaceLeb." },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://lebanon-social-main.vercel.app/communities" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: "https://lebanon-social-main.vercel.app/communities" }],
   }),
   component: CommunitiesPage,
 });
 
-function CommunityCard({ community, userId }: { community: DbCommunity; userId?: string }) {
+function CommunityCard({
+  community,
+  userId,
+}: {
+  community: DbCommunity;
+  userId?: string | undefined;
+}) {
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: () =>
@@ -43,7 +56,7 @@ function CommunityCard({ community, userId }: { community: DbCommunity; userId?:
       <div>
         <p className="font-semibold">{community.name}</p>
         <p className="mt-0.5 text-xs capitalize text-muted-foreground">
-          {community.type} · {community.member_count.toLocaleString()} members
+          {community.type} &middot; {community.member_count.toLocaleString()} members
         </p>
       </div>
       <Button
@@ -69,7 +82,7 @@ function CommunitiesPage() {
   return (
     <div className="min-h-screen">
       <TopBar />
-      <main className="mx-auto flex max-w-[1400px] gap-6 px-4 py-6">
+      <main id="main-content" className="mx-auto flex max-w-[1400px] gap-6 px-4 py-6">
         <LeftNav />
         <div className="flex-1 space-y-5">
           <h1 className="text-2xl font-bold">Communities</h1>
@@ -82,21 +95,22 @@ function CommunitiesPage() {
           )}
           {!isLoading && communities.length === 0 && (
             <div className="glass rounded-3xl p-12 text-center">
-              <p className="text-3xl">🏘️</p>
+              <p className="text-3xl">&#127961;&#65039;</p>
               <p className="mt-3 font-semibold">No communities yet</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Run the SQL migration and be the first to create one!
+                Communities are coming soon. Be the first to create one!
               </p>
             </div>
           )}
           {communities.length > 0 && (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {communities.map((c) => (
-                <CommunityCard key={c.id} community={c} userId={user?.id} />
+                <CommunityCard key={c.id} community={c} userId={user?.id ?? undefined} />
               ))}
             </div>
           )}
         </div>
+        <RightRail />
       </main>
     </div>
   );

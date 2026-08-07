@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { UtensilsCrossed, MapPin, Phone } from "lucide-react";
 import { TopBar } from "@/components/yalla/top-bar";
 import { LeftNav } from "@/components/yalla/left-nav";
+import { RightRail } from "@/components/yalla/right-rail";
 import { fetchFoodPlaces, foodQueryKey, type DbFoodPlace } from "@/lib/db";
 
 export const Route = createFileRoute("/food")({
@@ -11,27 +12,70 @@ export const Route = createFileRoute("/food")({
     meta: [
       { title: "Food & Restaurants — FaceLeb" },
       { name: "description", content: "Discover the best restaurants and food places in Lebanon." },
+      { property: "og:title", content: "Food & Restaurants — FaceLeb" },
+      {
+        property: "og:description",
+        content: "Discover the best restaurants and food places in Lebanon.",
+      },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://lebanon-social-main.vercel.app/food" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: "https://lebanon-social-main.vercel.app/food" }],
   }),
   component: FoodPage,
 });
 
-const CUISINES = ["All", "Lebanese", "Armenian", "Mediterranean", "Street Food", "Seafood", "Japanese", "Café", "International"];
+const CUISINES = [
+  "All",
+  "Lebanese",
+  "Armenian",
+  "Mediterranean",
+  "Street Food",
+  "Seafood",
+  "Japanese",
+  "Coffee & Cafés",
+  "International",
+];
 const CUISINE_EMOJI: Record<string, string> = {
-  Lebanese: "🫙", Armenian: "🥘", Mediterranean: "🐟", "Street Food": "🌯",
-  Seafood: "🦞", Japanese: "🍣", Café: "☕", International: "🌍",
+  Lebanese: "🫙",
+  Armenian: "🥘",
+  Mediterranean: "🐟",
+  "Street Food": "🌯",
+  Seafood: "🦞",
+  Japanese: "🍣",
+  "Coffee & Cafés": "☕",
+  International: "🌍",
 };
 const PRICE_COLOR: Record<string, string> = {
-  "$": "text-green-600", "$$": "text-amber-600", "$$$": "text-red-500",
+  $: "text-green-600",
+  $$: "text-amber-600",
+  $$$: "text-red-500",
 };
+
+function Star({ filled }: { filled: boolean }) {
+  return (
+    <svg viewBox="0 0 20 20" className="size-3.5" aria-hidden>
+      <path
+        d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+        className={filled ? "fill-gold stroke-gold" : "fill-none stroke-muted-foreground"}
+        strokeWidth={filled ? 0 : 1.5}
+      />
+    </svg>
+  );
+}
 
 function StarRating({ rating }: { rating: number }) {
   const full = Math.floor(rating);
-  const empty = 5 - full;
   return (
     <span className="flex items-center gap-1">
-      <span className="text-gold text-sm">
-        {"★".repeat(full)}{"☆".repeat(empty)}
+      <span
+        className="flex items-center gap-0.5"
+        aria-label={`${rating.toFixed(1)} out of 5 stars`}
+      >
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Star key={i} filled={i < full} />
+        ))}
       </span>
       <span className="text-xs text-muted-foreground">{rating.toFixed(1)}</span>
     </span>
@@ -43,7 +87,12 @@ function FoodCard({ place }: { place: DbFoodPlace }) {
   return (
     <article className="glass flex flex-col overflow-hidden rounded-3xl transition-shadow hover:shadow-lift">
       {place.image_url ? (
-        <img src={place.image_url} alt={place.name} className="h-44 w-full object-cover" loading="lazy" />
+        <img
+          src={place.image_url}
+          alt={place.name}
+          className="h-44 w-full object-cover"
+          loading="lazy"
+        />
       ) : (
         <div className="flex h-44 items-center justify-center bg-gradient-to-br from-orange-400/15 to-red-400/15 text-5xl">
           {emoji}
@@ -54,14 +103,18 @@ function FoodCard({ place }: { place: DbFoodPlace }) {
           <div>
             <p className="font-semibold">{place.name}</p>
             {place.is_featured && (
-              <span className="text-[10px] font-bold uppercase tracking-wide text-gold">⭐ Featured</span>
+              <span className="text-[10px] font-bold uppercase tracking-wide text-gold">
+                ⭐ Featured
+              </span>
             )}
           </div>
           <div className="flex flex-col items-end gap-1">
             <span className="rounded-full bg-orange-400/15 px-2 py-0.5 text-[10px] font-semibold text-orange-600">
               {emoji} {place.cuisine}
             </span>
-            <span className={`text-sm font-bold ${PRICE_COLOR[place.price_range] ?? "text-foreground"}`}>
+            <span
+              className={`text-sm font-bold ${PRICE_COLOR[place.price_range] ?? "text-foreground"}`}
+            >
               {place.price_range}
             </span>
           </div>
@@ -79,7 +132,10 @@ function FoodCard({ place }: { place: DbFoodPlace }) {
           {place.address && <span className="truncate">{place.address}</span>}
         </div>
         {place.phone && (
-          <a href={`tel:${place.phone}`} className="flex items-center gap-1.5 text-xs font-medium text-accent hover:underline">
+          <a
+            href={`tel:${place.phone}`}
+            className="flex items-center gap-1.5 text-xs font-medium text-accent hover:underline"
+          >
             <Phone className="size-3" /> {place.phone}
           </a>
         )}
@@ -102,7 +158,7 @@ function FoodPage() {
   return (
     <div className="min-h-screen">
       <TopBar />
-      <main className="mx-auto flex max-w-[1400px] gap-6 px-4 py-6">
+      <main id="main-content" className="mx-auto flex max-w-[1400px] gap-6 px-4 py-6">
         <LeftNav />
         <div className="flex-1 space-y-6">
           <div>
@@ -111,21 +167,28 @@ function FoodPage() {
           </div>
 
           {/* Cuisine filter */}
-          <div className="flex flex-wrap gap-2">
-            {CUISINES.map((c) => (
-              <button
-                key={c}
-                onClick={() => setCuisine(c)}
-                className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
-                  cuisine === c
-                    ? "bg-primary text-primary-foreground shadow-lift"
-                    : "glass border border-border/60 text-foreground/70 hover:border-primary/40 hover:text-primary"
-                }`}
-              >
-                {c !== "All" && <span>{CUISINE_EMOJI[c]}</span>}
-                {c}
-              </button>
-            ))}
+          <div className="space-y-2">
+            <div className="flex flex-wrap gap-2">
+              {CUISINES.map((c) => (
+                <button
+                  key={c}
+                  onClick={() => setCuisine(c)}
+                  className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
+                    cuisine === c
+                      ? "bg-primary text-primary-foreground shadow-lift"
+                      : "glass border border-border/60 text-foreground/70 hover:border-primary/40 hover:text-primary"
+                  }`}
+                >
+                  {c !== "All" && <span>{CUISINE_EMOJI[c]}</span>}
+                  {c}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Price guide: <span className="font-semibold text-green-600">$</span> = under $10 ·{" "}
+              <span className="font-semibold text-amber-600">$$</span> = $10–25 ·{" "}
+              <span className="font-semibold text-red-500">$$$</span> = $25+
+            </p>
           </div>
 
           {isLoading && (
@@ -143,7 +206,9 @@ function FoodPage() {
               </div>
               <p className="font-semibold text-lg">No places found</p>
               <p className="text-sm text-muted-foreground">
-                Run the SQL migration to load restaurant data.
+                {cuisine === "All"
+                  ? "Restaurant listings coming soon — check back shortly."
+                  : `No ${cuisine} restaurants found yet.`}
               </p>
             </div>
           )}
@@ -154,7 +219,9 @@ function FoodPage() {
                 ⭐ Featured
               </h2>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {featured.map((p) => <FoodCard key={p.id} place={p} />)}
+                {featured.map((p) => (
+                  <FoodCard key={p.id} place={p} />
+                ))}
               </div>
             </div>
           )}
@@ -167,11 +234,14 @@ function FoodPage() {
                 </h2>
               )}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {(cuisine !== "All" ? places : rest).map((p) => <FoodCard key={p.id} place={p} />)}
+                {(cuisine !== "All" ? places : rest).map((p) => (
+                  <FoodCard key={p.id} place={p} />
+                ))}
               </div>
             </div>
           )}
         </div>
+        <RightRail />
       </main>
     </div>
   );

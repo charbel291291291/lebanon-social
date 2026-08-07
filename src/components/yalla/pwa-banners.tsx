@@ -42,7 +42,9 @@ export function PWABanners() {
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-sm font-bold">Install FaceLeb</p>
-            <p className="text-xs text-muted-foreground">Add to your home screen for the best experience</p>
+            <p className="text-xs text-muted-foreground">
+              Add to your home screen for the best experience
+            </p>
           </div>
           <div className="flex shrink-0 gap-1.5">
             <button

@@ -1,4 +1,5 @@
 import { CalendarDays, Flame, Users } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -31,16 +32,19 @@ function formatCount(n: number) {
 }
 
 function TrendsSection({ trends }: { trends: DbTrend[] }) {
+  const navigate = useNavigate();
   if (!trends.length) {
-    return (
-      <p className="text-xs text-muted-foreground">No trends yet · Check back soon</p>
-    );
+    return <p className="text-xs text-muted-foreground">No trends yet &middot; Check back soon</p>;
   }
   return (
     <ul className="space-y-2">
       {trends.map((t) => (
         <li key={t.id}>
-          <button className="w-full rounded-2xl px-2 py-1.5 text-left transition-colors hover:bg-primary/8">
+          <button
+            onClick={() => navigate({ to: "/search", search: { q: t.tag } })}
+            className="w-full rounded-2xl px-2 py-1.5 text-left transition-colors hover:bg-primary/8"
+            aria-label={`Search for ${t.tag}`}
+          >
             <p className="text-sm font-semibold text-primary">{t.tag}</p>
             <p className="text-xs text-muted-foreground">{formatCount(t.post_count)} posts</p>
           </button>
@@ -50,7 +54,7 @@ function TrendsSection({ trends }: { trends: DbTrend[] }) {
   );
 }
 
-function EventItem({ event, userId }: { event: DbEvent; userId?: string }) {
+function EventItem({ event, userId }: { event: DbEvent; userId?: string | undefined }) {
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: () => rsvpEvent(event.id, userId!, event.is_attending ? "not_going" : "going"),
@@ -82,7 +86,13 @@ function EventItem({ event, userId }: { event: DbEvent; userId?: string }) {
   );
 }
 
-function CommunityItem({ community, userId }: { community: DbCommunity; userId?: string }) {
+function CommunityItem({
+  community,
+  userId,
+}: {
+  community: DbCommunity;
+  userId?: string | undefined;
+}) {
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: () =>
@@ -114,7 +124,7 @@ function CommunityItem({ community, userId }: { community: DbCommunity; userId?:
   );
 }
 
-export function RightRail() {
+export function RightRail({ inline }: { inline?: boolean }) {
   const { user } = useAuth();
 
   const { data: trends = [] } = useQuery({
@@ -130,8 +140,49 @@ export function RightRail() {
     queryFn: () => fetchCommunities(user?.id),
   });
 
+  if (inline) {
+    return (
+      <div className="flex flex-col gap-4">
+        <section className="glass rounded-3xl p-4">
+          <h2 className="mb-3 flex items-center gap-2 text-sm font-bold">
+            <Flame className="size-4 text-gold" /> Trending in Lebanon
+          </h2>
+          <TrendsSection trends={trends} />
+        </section>
+        <section className="glass rounded-3xl p-4">
+          <h2 className="mb-3 flex items-center gap-2 text-sm font-bold">
+            <CalendarDays className="size-4 text-accent" /> Upcoming events
+          </h2>
+          {events.length === 0 ? (
+            <p className="text-xs text-muted-foreground">No upcoming events</p>
+          ) : (
+            <ul className="space-y-3">
+              {events.map((e) => (
+                <EventItem key={e.id} event={e} userId={user?.id ?? undefined} />
+              ))}
+            </ul>
+          )}
+        </section>
+        <section className="glass rounded-3xl p-4">
+          <h2 className="mb-3 flex items-center gap-2 text-sm font-bold">
+            <Users className="size-4 text-primary" /> Communities near you
+          </h2>
+          {communities.length === 0 ? (
+            <p className="text-xs text-muted-foreground">No communities yet</p>
+          ) : (
+            <ul className="space-y-3">
+              {communities.map((c) => (
+                <CommunityItem key={c.id} community={c} userId={user?.id ?? undefined} />
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
+    );
+  }
+
   return (
-    <aside className="sticky top-20 hidden h-fit w-80 shrink-0 flex-col gap-4 2xl:flex">
+    <aside className="sticky top-20 hidden h-fit w-80 shrink-0 flex-col gap-4 xl:flex">
       <section className="glass rounded-3xl p-4">
         <h2 className="mb-3 flex items-center gap-2 text-sm font-bold">
           <Flame className="size-4 text-gold" /> Trending in Lebanon
@@ -148,7 +199,7 @@ export function RightRail() {
         ) : (
           <ul className="space-y-3">
             {events.map((e) => (
-              <EventItem key={e.id} event={e} userId={user?.id} />
+              <EventItem key={e.id} event={e} userId={user?.id ?? undefined} />
             ))}
           </ul>
         )}
@@ -163,7 +214,7 @@ export function RightRail() {
         ) : (
           <ul className="space-y-3">
             {communities.map((c) => (
-              <CommunityItem key={c.id} community={c} userId={user?.id} />
+              <CommunityItem key={c.id} community={c} userId={user?.id ?? undefined} />
             ))}
           </ul>
         )}

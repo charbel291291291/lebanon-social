@@ -4,6 +4,9 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/callback")({
+  head: () => ({
+    meta: [{ title: "Signing in… — FaceLeb" }, { name: "robots", content: "noindex, nofollow" }],
+  }),
   component: CallbackPage,
 });
 
@@ -18,7 +21,7 @@ function CallbackPage() {
 
     if (error) {
       toast.error(errorDescription ?? "Authentication failed");
-      navigate({ to: "/auth" });
+      navigate({ to: "/auth", search: { next: undefined } });
       return;
     }
 
@@ -39,7 +42,7 @@ function CallbackPage() {
         if (error) {
           subscription.unsubscribe();
           toast.error(error.message);
-          navigate({ to: "/auth" });
+          navigate({ to: "/auth", search: { next: undefined } });
         }
         // onAuthStateChange fires SIGNED_IN → navigates to /settings
       });
@@ -52,7 +55,7 @@ function CallbackPage() {
         } else if (!window.location.hash.includes("access_token")) {
           // Nothing to process
           subscription.unsubscribe();
-          navigate({ to: "/auth" });
+          navigate({ to: "/auth", search: { next: undefined } });
         }
         // If hash has access_token, onAuthStateChange will fire shortly
       });

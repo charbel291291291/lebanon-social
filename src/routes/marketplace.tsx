@@ -1,19 +1,28 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, X, Tag, Package } from "lucide-react";
 import { toast } from "sonner";
 import { TopBar } from "@/components/yalla/top-bar";
 import { LeftNav } from "@/components/yalla/left-nav";
+import { RightRail } from "@/components/yalla/right-rail";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import {
-  fetchListings, createListing, listingsQueryKey, getInitials, relativeTime,
+  fetchListings,
+  createListing,
+  listingsQueryKey,
+  getInitials,
+  relativeTime,
   type DbListing,
 } from "@/lib/db";
 import { governorates } from "@/lib/yalla-data";
@@ -24,18 +33,54 @@ export const Route = createFileRoute("/marketplace")({
     meta: [
       { title: "Marketplace — FaceLeb" },
       { name: "description", content: "Buy and sell within the Lebanese community." },
+      { property: "og:title", content: "Marketplace — FaceLeb" },
+      { property: "og:description", content: "Buy and sell within the Lebanese community." },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://lebanon-social-main.vercel.app/marketplace" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: "https://lebanon-social-main.vercel.app/marketplace" }],
   }),
   component: MarketplacePage,
 });
 
-const CATEGORIES = ["All", "Electronics", "Furniture", "Cars & Vehicles", "Clothing & Fashion", "Real Estate", "Books & Education", "Sports & Leisure", "Services", "Other"];
+const CATEGORIES = [
+  "All",
+  "Electronics",
+  "Furniture",
+  "Cars & Vehicles",
+  "Clothing & Fashion",
+  "Real Estate",
+  "Books & Education",
+  "Sports & Leisure",
+  "Services",
+  "Other",
+];
 const CONDITIONS = ["new", "like_new", "good", "fair", "used"];
-const COND_LABEL: Record<string, string> = { new: "New", like_new: "Like New", good: "Good", fair: "Fair", used: "Used" };
-const COND_COLOR: Record<string, string> = { new: "text-green-600", like_new: "text-emerald-600", good: "text-blue-600", fair: "text-amber-600", used: "text-gray-500" };
+const COND_LABEL: Record<string, string> = {
+  new: "New",
+  like_new: "Like New",
+  good: "Good",
+  fair: "Fair",
+  used: "Used",
+};
+const COND_COLOR: Record<string, string> = {
+  new: "text-green-600",
+  like_new: "text-emerald-600",
+  good: "text-blue-600",
+  fair: "text-amber-600",
+  used: "text-gray-500",
+};
 const CAT_EMOJI: Record<string, string> = {
-  Electronics: "🖥️", Furniture: "🛋️", "Cars & Vehicles": "🚗", "Clothing & Fashion": "👕",
-  "Real Estate": "🏠", "Books & Education": "📚", "Sports & Leisure": "⚽", Services: "🔧", Other: "📦",
+  Electronics: "🖥️",
+  Furniture: "🛋️",
+  "Cars & Vehicles": "🚗",
+  "Clothing & Fashion": "👕",
+  "Real Estate": "🏠",
+  "Books & Education": "📚",
+  "Sports & Leisure": "⚽",
+  Services: "🔧",
+  Other: "📦",
 };
 
 function formatPrice(price: number | null, currency: string) {
@@ -44,12 +89,17 @@ function formatPrice(price: number | null, currency: string) {
   return `$${price.toLocaleString()}`;
 }
 
-function ListingCard({ listing }: { listing: DbListing }) {
+const ListingCard = memo(function ListingCard({ listing }: { listing: DbListing }) {
   const emoji = CAT_EMOJI[listing.category] ?? "📦";
   return (
     <article className="glass flex flex-col overflow-hidden rounded-3xl transition-shadow hover:shadow-lift">
       {listing.image_url ? (
-        <img src={listing.image_url} alt={listing.title} className="h-44 w-full object-cover" loading="lazy" />
+        <img
+          src={listing.image_url}
+          alt={listing.title}
+          className="h-44 w-full object-cover"
+          loading="lazy"
+        />
       ) : (
         <div className="flex h-44 items-center justify-center bg-gradient-to-br from-primary/10 to-accent/10 text-5xl">
           {emoji}
@@ -62,7 +112,9 @@ function ListingCard({ listing }: { listing: DbListing }) {
             {listing.category}
           </span>
         </div>
-        <p className="text-lg font-bold text-primary">{formatPrice(listing.price, listing.currency)}</p>
+        <p className="text-lg font-bold text-primary">
+          {formatPrice(listing.price, listing.currency)}
+        </p>
         {listing.description && (
           <p className="line-clamp-2 text-xs text-muted-foreground">{listing.description}</p>
         )}
@@ -87,27 +139,34 @@ function ListingCard({ listing }: { listing: DbListing }) {
       </div>
     </article>
   );
-}
+});
 
 function CreateListingForm({ onClose }: { onClose: () => void }) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [form, setForm] = useState({
-    title: "", description: "", price: "", currency: "USD",
-    category: "Other", condition: "good", governorate: "",
+    title: "",
+    description: "",
+    price: "",
+    currency: "USD",
+    category: "Other",
+    condition: "good",
+    governorate: "",
   });
 
   const mutation = useMutation({
-    mutationFn: () =>
-      createListing(user!.id, {
+    mutationFn: () => {
+      const listingData: Parameters<typeof createListing>[1] = {
         title: form.title.trim(),
         description: form.description.trim(),
         price: form.price ? parseFloat(form.price) : null,
         currency: form.currency,
         category: form.category,
         condition: form.condition,
-        governorate: form.governorate || undefined,
-      }),
+        ...(form.governorate ? { governorate: form.governorate } : {}),
+      };
+      return createListing(user!.id, listingData);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["listings"] });
       toast.success("Listing posted!");
@@ -129,25 +188,42 @@ function CreateListingForm({ onClose }: { onClose: () => void }) {
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="sm:col-span-2 space-y-1.5">
           <Label>Title *</Label>
-          <Input className="rounded-xl" placeholder="e.g. iPhone 14 Pro — excellent condition" value={form.title} onChange={(e) => set("title", e.target.value)} required />
+          <Input
+            className="rounded-xl"
+            placeholder="e.g. iPhone 14 Pro — excellent condition"
+            value={form.title}
+            onChange={(e) => set("title", e.target.value)}
+            required
+          />
         </div>
         <div className="sm:col-span-2 space-y-1.5">
           <Label>Description</Label>
           <textarea
             className="w-full rounded-xl border border-input bg-background/60 px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            rows={3} placeholder="Describe your item..." value={form.description}
+            rows={3}
+            placeholder="Describe your item..."
+            value={form.description}
             onChange={(e) => set("description", e.target.value)}
           />
         </div>
         <div className="flex gap-2">
           <div className="flex-1 space-y-1.5">
             <Label>Price</Label>
-            <Input className="rounded-xl" type="number" min="0" placeholder="0" value={form.price} onChange={(e) => set("price", e.target.value)} />
+            <Input
+              className="rounded-xl"
+              type="number"
+              min="0"
+              placeholder="0"
+              value={form.price}
+              onChange={(e) => set("price", e.target.value)}
+            />
           </div>
           <div className="w-28 space-y-1.5">
             <Label>Currency</Label>
             <Select value={form.currency} onValueChange={(v) => set("currency", v)}>
-              <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="rounded-xl">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="USD">USD ($)</SelectItem>
                 <SelectItem value="LBP">LBP (L.L.)</SelectItem>
@@ -158,27 +234,45 @@ function CreateListingForm({ onClose }: { onClose: () => void }) {
         <div className="space-y-1.5">
           <Label>Governorate</Label>
           <Select value={form.governorate} onValueChange={(v) => set("governorate", v)}>
-            <SelectTrigger className="rounded-xl"><SelectValue placeholder="Select…" /></SelectTrigger>
+            <SelectTrigger className="rounded-xl">
+              <SelectValue placeholder="Select…" />
+            </SelectTrigger>
             <SelectContent>
-              {governorates.map((g) => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+              {governorates.map((g) => (
+                <SelectItem key={g} value={g}>
+                  {g}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
         <div className="space-y-1.5">
           <Label>Category *</Label>
           <Select value={form.category} onValueChange={(v) => set("category", v)}>
-            <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="rounded-xl">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
-              {CATEGORIES.filter((c) => c !== "All").map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+              {CATEGORIES.filter((c) => c !== "All").map((c) => (
+                <SelectItem key={c} value={c}>
+                  {c}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
         <div className="space-y-1.5">
           <Label>Condition *</Label>
           <Select value={form.condition} onValueChange={(v) => set("condition", v)}>
-            <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="rounded-xl">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
-              {CONDITIONS.map((c) => <SelectItem key={c} value={c}>{COND_LABEL[c]}</SelectItem>)}
+              {CONDITIONS.map((c) => (
+                <SelectItem key={c} value={c}>
+                  {COND_LABEL[c]}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -207,13 +301,15 @@ function MarketplacePage() {
   return (
     <div className="min-h-screen">
       <TopBar />
-      <main className="mx-auto flex max-w-[1400px] gap-6 px-4 py-6">
+      <main id="main-content" className="mx-auto flex max-w-[1400px] gap-6 px-4 py-6">
         <LeftNav />
         <div className="flex-1 space-y-5">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold">Marketplace</h1>
-              <p className="text-sm text-muted-foreground">Buy and sell within the Lebanese community</p>
+              <p className="text-sm text-muted-foreground">
+                Buy and sell within the Lebanese community
+              </p>
             </div>
             {user && (
               <Button onClick={() => setShowForm((v) => !v)} className="rounded-full gap-2">
@@ -269,10 +365,13 @@ function MarketplacePage() {
 
           {listings.length > 0 && (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {listings.map((l) => <ListingCard key={l.id} listing={l} />)}
+              {listings.map((l) => (
+                <ListingCard key={l.id} listing={l} />
+              ))}
             </div>
           )}
         </div>
+        <RightRail />
       </main>
     </div>
   );

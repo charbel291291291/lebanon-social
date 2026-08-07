@@ -7,27 +7,27 @@ import {
   UtensilsCrossed,
   Mountain,
   Flame,
-  MapPinned,
+  Search,
   Settings,
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
-import { governorates } from "@/lib/yalla-data";
 import { useAuth } from "@/hooks/use-auth";
 import { getInitials } from "@/lib/db";
 
 const navItems = [
-  { icon: Home,            label: "Feed",        to: "/"            },
-  { icon: Users,           label: "Communities", to: "/communities" },
-  { icon: CalendarDays,    label: "Events",      to: "/events"      },
-  { icon: Store,           label: "Marketplace", to: "/marketplace" },
-  { icon: Building2,       label: "Businesses",  to: "/businesses"  },
-  { icon: UtensilsCrossed, label: "Food",        to: "/food"        },
-  { icon: Mountain,        label: "Tourism",     to: "/tourism"     },
-  { icon: Flame,           label: "Trending",    to: "/trending"    },
-  { icon: Settings,        label: "Settings",    to: "/settings"    },
+  { icon: Home, label: "Feed", to: "/" },
+  { icon: Users, label: "Communities", to: "/communities" },
+  { icon: CalendarDays, label: "Events", to: "/events" },
+  { icon: Store, label: "Marketplace", to: "/marketplace" },
+  { icon: Building2, label: "Businesses", to: "/businesses" },
+  { icon: UtensilsCrossed, label: "Food", to: "/food" },
+  { icon: Mountain, label: "Tourism", to: "/tourism" },
+  { icon: Flame, label: "Trending", to: "/trending" },
+  { icon: Search, label: "Search", to: "/search" },
+  { icon: Settings, label: "Settings", to: "/settings" },
 ] as const;
 
 const LINK_BASE =
@@ -44,7 +44,12 @@ export function LeftNav() {
         .select("id, full_name, username, avatar_url")
         .eq("id", user!.id)
         .maybeSingle();
-      return data as { id: string; full_name: string; username: string; avatar_url: string | null } | null;
+      return data as {
+        id: string;
+        full_name: string;
+        username: string;
+        avatar_url: string | null;
+      } | null;
     },
     enabled: !!user?.id,
     staleTime: 60_000,
@@ -52,14 +57,12 @@ export function LeftNav() {
 
   const displayName =
     profile?.full_name ||
-    user?.user_metadata?.full_name as string | undefined ||
+    (user?.user_metadata?.["full_name"] as string | undefined) ||
     user?.email?.split("@")[0] ||
     "My Profile";
 
   const avatarUrl =
-    profile?.avatar_url ||
-    (user?.user_metadata?.avatar_url as string | undefined) ||
-    null;
+    profile?.avatar_url || (user?.user_metadata?.["avatar_url"] as string | undefined) || null;
 
   return (
     <nav
@@ -68,28 +71,44 @@ export function LeftNav() {
     >
       {/* Profile card */}
       {user ? (
-        <Link
-          to={profile?.username ? `/u/${profile.username}` : "/settings"}
-          className="glass flex items-center gap-3 rounded-3xl p-4 transition-all hover:ring-2 hover:ring-primary/20"
-        >
-          <Avatar className="size-12 shrink-0 ring-2 ring-primary/30">
-            {avatarUrl && <AvatarImage src={avatarUrl} />}
-            <AvatarFallback className="bg-primary/15 font-semibold text-primary">
-              {getInitials(displayName)}
-            </AvatarFallback>
-          </Avatar>
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold">{displayName}</p>
-            {profile?.username ? (
+        profile?.username ? (
+          <Link
+            to="/u/$username"
+            params={{ username: profile.username }}
+            className="glass flex items-center gap-3 rounded-3xl p-4 transition-all hover:ring-2 hover:ring-primary/20"
+          >
+            <Avatar className="size-12 shrink-0 ring-2 ring-primary/30">
+              {avatarUrl && <AvatarImage src={avatarUrl} />}
+              <AvatarFallback className="bg-primary/15 font-semibold text-primary">
+                {getInitials(displayName)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold">{displayName}</p>
               <p className="text-xs text-muted-foreground">@{profile.username}</p>
-            ) : (
+            </div>
+          </Link>
+        ) : (
+          <Link
+            to="/settings"
+            className="glass flex items-center gap-3 rounded-3xl p-4 transition-all hover:ring-2 hover:ring-primary/20"
+          >
+            <Avatar className="size-12 shrink-0 ring-2 ring-primary/30">
+              {avatarUrl && <AvatarImage src={avatarUrl} />}
+              <AvatarFallback className="bg-primary/15 font-semibold text-primary">
+                {getInitials(displayName)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold">{displayName}</p>
               <p className="text-xs text-muted-foreground">View profile →</p>
-            )}
-          </div>
-        </Link>
+            </div>
+          </Link>
+        )
       ) : (
         <Link
           to="/auth"
+          search={{ next: undefined }}
           className="glass flex items-center justify-center rounded-3xl p-4 text-sm font-semibold text-primary transition-all hover:ring-2 hover:ring-primary/20"
         >
           Sign in to FaceLeb
@@ -109,23 +128,6 @@ export function LeftNav() {
             {label}
           </Link>
         ))}
-      </div>
-
-      {/* Governorates */}
-      <div className="glass rounded-3xl p-4">
-        <p className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-          <MapPinned className="size-4" /> Explore by governorate
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {governorates.map((g) => (
-            <button
-              key={g}
-              className="rounded-full border border-border/70 bg-background/50 px-3 py-1 text-xs font-medium transition-colors hover:border-primary/50 hover:bg-primary/10 hover:text-primary"
-            >
-              {g}
-            </button>
-          ))}
-        </div>
       </div>
     </nav>
   );

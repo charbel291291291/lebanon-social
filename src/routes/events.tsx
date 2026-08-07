@@ -4,6 +4,7 @@ import { CalendarDays, MapPin, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { TopBar } from "@/components/yalla/top-bar";
 import { LeftNav } from "@/components/yalla/left-nav";
+import { RightRail } from "@/components/yalla/right-rail";
 import { Button } from "@/components/ui/button";
 import { fetchEvents, rsvpEvent, eventsQueryKey, type DbEvent } from "@/lib/db";
 import { useAuth } from "@/hooks/use-auth";
@@ -13,7 +14,13 @@ export const Route = createFileRoute("/events")({
     meta: [
       { title: "Events — FaceLeb" },
       { name: "description", content: "Upcoming events happening across Lebanon." },
+      { property: "og:title", content: "Events — FaceLeb" },
+      { property: "og:description", content: "Upcoming events happening across Lebanon." },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://lebanon-social-main.vercel.app/events" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: "https://lebanon-social-main.vercel.app/events" }],
   }),
   component: EventsPage,
 });
@@ -29,11 +36,10 @@ function formatDate(iso: string) {
   });
 }
 
-function EventCard({ event, userId }: { event: DbEvent; userId?: string }) {
+function EventCard({ event, userId }: { event: DbEvent; userId?: string | undefined }) {
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: () =>
-      rsvpEvent(event.id, userId!, event.is_attending ? "not_going" : "going"),
+    mutationFn: () => rsvpEvent(event.id, userId!, event.is_attending ? "not_going" : "going"),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["events"] }),
     onError: (e: Error) => toast.error(e.message),
   });
@@ -46,10 +52,10 @@ function EventCard({ event, userId }: { event: DbEvent; userId?: string }) {
       <div className="flex-1 space-y-1">
         <p className="font-semibold">{event.title}</p>
         <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <Clock className="size-3" /> {formatDate(event.starts_at)}
+          <Clock className="size-3" aria-hidden /> {formatDate(event.starts_at)}
         </p>
         <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <MapPin className="size-3" /> {event.place}
+          <MapPin className="size-3" aria-hidden /> {event.place}
         </p>
         <p className="text-xs text-muted-foreground">
           {event.attendee_count.toLocaleString()} going
@@ -60,6 +66,7 @@ function EventCard({ event, userId }: { event: DbEvent; userId?: string }) {
         variant={event.is_attending ? "default" : "outline"}
         onClick={() => userId && mutation.mutate()}
         disabled={!userId || mutation.isPending}
+        aria-pressed={event.is_attending}
         className="self-start rounded-full"
       >
         {event.is_attending ? "Going ✓" : "RSVP"}
@@ -78,7 +85,7 @@ function EventsPage() {
   return (
     <div className="min-h-screen">
       <TopBar />
-      <main className="mx-auto flex max-w-[1400px] gap-6 px-4 py-6">
+      <main id="main-content" className="mx-auto flex max-w-[1400px] gap-6 px-4 py-6">
         <LeftNav />
         <div className="flex-1 space-y-5">
           <h1 className="text-2xl font-bold">Upcoming Events</h1>
@@ -91,21 +98,22 @@ function EventsPage() {
           )}
           {!isLoading && events.length === 0 && (
             <div className="glass rounded-3xl p-12 text-center">
-              <p className="text-3xl">📅</p>
+              <p className="text-3xl">&#128197;</p>
               <p className="mt-3 font-semibold">No upcoming events</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Check back soon — events will appear here once the database is set up.
+                Check back soon &mdash; events will appear here once the database is set up.
               </p>
             </div>
           )}
           {events.length > 0 && (
             <div className="space-y-4">
               {events.map((e) => (
-                <EventCard key={e.id} event={e} userId={user?.id} />
+                <EventCard key={e.id} event={e} userId={user?.id ?? undefined} />
               ))}
             </div>
           )}
         </div>
+        <RightRail />
       </main>
     </div>
   );
