@@ -36,10 +36,10 @@ export const Route = createFileRoute("/marketplace")({
       { property: "og:title", content: "Marketplace — FaceLeb" },
       { property: "og:description", content: "Buy and sell within the Lebanese community." },
       { property: "og:type", content: "website" },
-      { property: "og:url", content: "https://lebanon-social-main.vercel.app/marketplace" },
+      { property: "og:url", content: "https://faceleb.vercel.app/marketplace" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
-    links: [{ rel: "canonical", href: "https://lebanon-social-main.vercel.app/marketplace" }],
+    links: [{ rel: "canonical", href: "https://faceleb.vercel.app/marketplace" }],
   }),
   component: MarketplacePage,
 });

@@ -28,11 +28,11 @@ export const Route = createFileRoute("/search")({
         content: "Search posts, businesses, food, and people on FaceLeb.",
       },
       { property: "og:type", content: "website" },
-      { property: "og:url", content: "https://lebanon-social-main.vercel.app/search" },
+      { property: "og:url", content: "https://faceleb.vercel.app/search" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "robots", content: "noindex" },
     ],
-    links: [{ rel: "canonical", href: "https://lebanon-social-main.vercel.app/search" }],
+    links: [{ rel: "canonical", href: "https://faceleb.vercel.app/search" }],
   }),
   component: SearchPage,
 });

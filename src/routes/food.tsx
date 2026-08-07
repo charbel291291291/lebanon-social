@@ -18,10 +18,10 @@ export const Route = createFileRoute("/food")({
         content: "Discover the best restaurants and food places in Lebanon.",
       },
       { property: "og:type", content: "website" },
-      { property: "og:url", content: "https://lebanon-social-main.vercel.app/food" },
+      { property: "og:url", content: "https://faceleb.vercel.app/food" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
-    links: [{ rel: "canonical", href: "https://lebanon-social-main.vercel.app/food" }],
+    links: [{ rel: "canonical", href: "https://faceleb.vercel.app/food" }],
   }),
   component: FoodPage,
 });

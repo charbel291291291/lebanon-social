@@ -23,10 +23,10 @@ export const Route = createFileRoute("/auth")({
       { property: "og:title", content: title },
       { property: "og:description", content: description },
       { property: "og:type", content: "website" },
-      { property: "og:url", content: "https://lebanon-social-main.vercel.app/auth" },
+      { property: "og:url", content: "https://faceleb.vercel.app/auth" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
-    links: [{ rel: "canonical", href: "https://lebanon-social-main.vercel.app/auth" }],
+    links: [{ rel: "canonical", href: "https://faceleb.vercel.app/auth" }],
   }),
   component: AuthPage,
 });

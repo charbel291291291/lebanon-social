@@ -29,10 +29,10 @@ export const Route = createFileRoute("/businesses")({
       { property: "og:title", content: "Businesses — FaceLeb" },
       { property: "og:description", content: "Discover and support Lebanese businesses near you." },
       { property: "og:type", content: "website" },
-      { property: "og:url", content: "https://lebanon-social-main.vercel.app/businesses" },
+      { property: "og:url", content: "https://faceleb.vercel.app/businesses" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
-    links: [{ rel: "canonical", href: "https://lebanon-social-main.vercel.app/businesses" }],
+    links: [{ rel: "canonical", href: "https://faceleb.vercel.app/businesses" }],
   }),
   component: BusinessesPage,
 });

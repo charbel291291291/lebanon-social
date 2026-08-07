@@ -19,14 +19,14 @@ export const Route = createFileRoute("/u/$username")({
         { property: "og:type", content: "profile" },
         {
           property: "og:url",
-          content: `https://lebanon-social-main.vercel.app/u/${params.username}`,
+          content: `https://faceleb.vercel.app/u/${params.username}`,
         },
         { name: "twitter:card", content: "summary_large_image" },
       ],
       links: [
         {
           rel: "canonical",
-          href: `https://lebanon-social-main.vercel.app/u/${params.username}`,
+          href: `https://faceleb.vercel.app/u/${params.username}`,
         },
       ],
     };

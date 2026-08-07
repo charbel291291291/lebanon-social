@@ -23,10 +23,10 @@ export const Route = createFileRoute("/communities")({
       { property: "og:title", content: "Communities — FaceLeb" },
       { property: "og:description", content: "Discover and join Lebanese communities on FaceLeb." },
       { property: "og:type", content: "website" },
-      { property: "og:url", content: "https://lebanon-social-main.vercel.app/communities" },
+      { property: "og:url", content: "https://faceleb.vercel.app/communities" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
-    links: [{ rel: "canonical", href: "https://lebanon-social-main.vercel.app/communities" }],
+    links: [{ rel: "canonical", href: "https://faceleb.vercel.app/communities" }],
   }),
   component: CommunitiesPage,
 });

@@ -17,10 +17,10 @@ export const Route = createFileRoute("/events")({
       { property: "og:title", content: "Events — FaceLeb" },
       { property: "og:description", content: "Upcoming events happening across Lebanon." },
       { property: "og:type", content: "website" },
-      { property: "og:url", content: "https://lebanon-social-main.vercel.app/events" },
+      { property: "og:url", content: "https://faceleb.vercel.app/events" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
-    links: [{ rel: "canonical", href: "https://lebanon-social-main.vercel.app/events" }],
+    links: [{ rel: "canonical", href: "https://faceleb.vercel.app/events" }],
   }),
   component: EventsPage,
 });

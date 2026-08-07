@@ -18,10 +18,10 @@ export const Route = createFileRoute("/tourism")({
         content: "Discover Lebanon's most beautiful places and attractions.",
       },
       { property: "og:type", content: "website" },
-      { property: "og:url", content: "https://lebanon-social-main.vercel.app/tourism" },
+      { property: "og:url", content: "https://faceleb.vercel.app/tourism" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
-    links: [{ rel: "canonical", href: "https://lebanon-social-main.vercel.app/tourism" }],
+    links: [{ rel: "canonical", href: "https://faceleb.vercel.app/tourism" }],
   }),
   component: TourismPage,
 });

@@ -95,16 +95,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       {
         property: "og:image",
-        content: "https://lebanon-social-main.vercel.app/icons/icon-512.png",
+        content: "https://faceleb.vercel.app/icons/icon-512.png",
       },
       { property: "og:image:width", content: "512" },
       { property: "og:image:height", content: "512" },
-      { property: "og:url", content: "https://lebanon-social-main.vercel.app" },
+      { property: "og:url", content: "https://faceleb.vercel.app" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@FaceLeb" },
       {
         name: "twitter:image",
-        content: "https://lebanon-social-main.vercel.app/icons/icon-512.png",
+        content: "https://faceleb.vercel.app/icons/icon-512.png",
       },
       { name: "theme-color", content: "#1A4BFF" },
       // iOS PWA
@@ -143,14 +143,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "@context": "https://schema.org",
           "@type": "WebSite",
           name: "FaceLeb",
-          url: "https://lebanon-social-main.vercel.app",
+          url: "https://faceleb.vercel.app",
           description:
             "FaceLeb — Lebanon's social network for neighborhoods, universities, food, events and local businesses.",
           potentialAction: {
             "@type": "SearchAction",
             target: {
               "@type": "EntryPoint",
-              urlTemplate: "https://lebanon-social-main.vercel.app/search?q={search_term_string}",
+              urlTemplate: "https://faceleb.vercel.app/search?q={search_term_string}",
             },
             "query-input": "required name=search_term_string",
           },

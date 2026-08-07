@@ -14,10 +14,10 @@ export const Route = createFileRoute("/trending")({
       { property: "og:title", content: "Trending — FaceLeb" },
       { property: "og:description", content: "What's trending in Lebanon right now." },
       { property: "og:type", content: "website" },
-      { property: "og:url", content: "https://lebanon-social-main.vercel.app/trending" },
+      { property: "og:url", content: "https://faceleb.vercel.app/trending" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
-    links: [{ rel: "canonical", href: "https://lebanon-social-main.vercel.app/trending" }],
+    links: [{ rel: "canonical", href: "https://faceleb.vercel.app/trending" }],
   }),
   component: TrendingPage,
 });
