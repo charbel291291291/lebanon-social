@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Bell,
   Search,
@@ -25,6 +25,7 @@ import { FaceLebIcon } from "./faceleb-icon";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { getInitials } from "@/lib/db";
+import { resolveMedia } from "@/lib/profile";
 
 const NAV_ITEMS = [
   { icon: Home, label: "Feed", to: "/" },
@@ -61,7 +62,16 @@ export function TopBar({ initialQuery }: { initialQuery?: string | undefined } =
 
   const displayName =
     profile?.full_name || (user?.user_metadata?.["full_name"] as string) || user?.email || "";
-  const avatarUrl = profile?.avatar_url || (user?.user_metadata?.["avatar_url"] as string) || null;
+  const rawAvatarUrl =
+    profile?.avatar_url || (user?.user_metadata?.["avatar_url"] as string) || null;
+
+  const [resolvedAvatar, setResolvedAvatar] = useState<string | null>(null);
+  useEffect(() => {
+    let alive = true;
+    resolveMedia(rawAvatarUrl).then((url) => alive && setResolvedAvatar(url));
+    return () => { alive = false; };
+  }, [rawAvatarUrl]);
+
   return (
     <header className="sticky top-0 z-50 glass rounded-none border-x-0 border-t-0">
       <div className="mx-auto flex h-16 max-w-[1400px] items-center gap-3 px-4">
@@ -175,7 +185,7 @@ export function TopBar({ initialQuery }: { initialQuery?: string | undefined } =
           {user ? (
             <Link to="/settings" aria-label="Your profile">
               <Avatar className="ml-1 size-9 ring-2 ring-gold/60">
-                {avatarUrl && <AvatarImage src={avatarUrl} />}
+                {resolvedAvatar && <AvatarImage src={resolvedAvatar} />}
                 <AvatarFallback className="bg-primary/15 text-sm font-semibold text-primary">
                   {getInitials(displayName)}
                 </AvatarFallback>

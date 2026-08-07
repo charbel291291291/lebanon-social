@@ -11,11 +11,13 @@ import {
   Settings,
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { getInitials } from "@/lib/db";
+import { resolveMedia } from "@/lib/profile";
 
 const navItems = [
   { icon: Home, label: "Feed", to: "/" },
@@ -35,6 +37,7 @@ const LINK_BASE =
 
 export function LeftNav() {
   const { user } = useAuth();
+  const [resolvedAvatar, setResolvedAvatar] = useState<string | null>(null);
 
   const { data: profile } = useQuery({
     queryKey: ["my-profile-nav", user?.id],
@@ -61,8 +64,14 @@ export function LeftNav() {
     user?.email?.split("@")[0] ||
     "My Profile";
 
-  const avatarUrl =
+  const rawAvatarUrl =
     profile?.avatar_url || (user?.user_metadata?.["avatar_url"] as string | undefined) || null;
+
+  useEffect(() => {
+    let alive = true;
+    resolveMedia(rawAvatarUrl).then((url) => alive && setResolvedAvatar(url));
+    return () => { alive = false; };
+  }, [rawAvatarUrl]);
 
   return (
     <nav
@@ -78,7 +87,7 @@ export function LeftNav() {
             className="glass flex items-center gap-3 rounded-3xl p-4 transition-all hover:ring-2 hover:ring-primary/20"
           >
             <Avatar className="size-12 shrink-0 ring-2 ring-primary/30">
-              {avatarUrl && <AvatarImage src={avatarUrl} />}
+              {resolvedAvatar && <AvatarImage src={resolvedAvatar} />}
               <AvatarFallback className="bg-primary/15 font-semibold text-primary">
                 {getInitials(displayName)}
               </AvatarFallback>
@@ -94,7 +103,7 @@ export function LeftNav() {
             className="glass flex items-center gap-3 rounded-3xl p-4 transition-all hover:ring-2 hover:ring-primary/20"
           >
             <Avatar className="size-12 shrink-0 ring-2 ring-primary/30">
-              {avatarUrl && <AvatarImage src={avatarUrl} />}
+              {resolvedAvatar && <AvatarImage src={resolvedAvatar} />}
               <AvatarFallback className="bg-primary/15 font-semibold text-primary">
                 {getInitials(displayName)}
               </AvatarFallback>

@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { BadgeCheck, ImagePlus, LogOut, Loader2 } from "lucide-react";
+import { BadgeCheck, ImagePlus, LogOut, Loader2, User, Lock, Camera } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { TopBar } from "@/components/yalla/top-bar";
-import { ProfileView } from "@/components/yalla/profile-view";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Select,
   SelectContent,
@@ -19,24 +19,23 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { governorates } from "@/lib/yalla-data";
-import { ensureProfile, slugifyUsername, uploadProfileMedia, type Profile } from "@/lib/profile";
+import {
+  ensureProfile,
+  slugifyUsername,
+  uploadProfileMedia,
+  resolveMedia,
+  type Profile,
+} from "@/lib/profile";
 import { normalizeUrl, isValidHttpUrl } from "@/lib/url";
+import { getInitials } from "@/lib/db";
 
 const ALLOWED_MIME = ["image/jpeg", "image/png", "image/gif", "image/webp", "image/avif"];
-
-const title = "Your profile settings — FaceLeb";
-const description =
-  "Edit your FaceLeb profile: cover photo, avatar, bio, governorate and privacy settings.";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({
     meta: [
-      { title },
-      { name: "description", content: description },
-      { property: "og:title", content: title },
-      { property: "og:description", content: description },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
+      { title: "Settings — FaceLeb" },
+      { name: "description", content: "Manage your FaceLeb account settings." },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
@@ -50,6 +49,7 @@ function SettingsPage() {
   const [form, setForm] = useState<Profile | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<"avatar" | "cover" | null>(null);
+  const [resolvedAvatar, setResolvedAvatar] = useState<string | null>(null);
 
   const { data } = useQuery({
     queryKey: ["my-profile", user.id],
@@ -59,6 +59,14 @@ function SettingsPage() {
   useEffect(() => {
     if (data) setForm(data);
   }, [data]);
+
+  useEffect(() => {
+    let alive = true;
+    resolveMedia(form?.avatar_url).then((url) => alive && setResolvedAvatar(url));
+    return () => {
+      alive = false;
+    };
+  }, [form?.avatar_url]);
 
   const set = <K extends keyof Profile>(key: K, value: Profile[K]) =>
     setForm((prev) => (prev ? { ...prev, [key]: value } : prev));
@@ -136,18 +144,24 @@ function SettingsPage() {
     return (
       <div className="min-h-screen">
         <TopBar />
-        <main id="main-content" className="mx-auto max-w-3xl px-4 py-6">
-          <div className="glass h-72 animate-pulse rounded-3xl" />
+        <main id="main-content" className="mx-auto max-w-2xl px-4 py-8">
+          <div className="space-y-4">
+            <div className="glass h-32 animate-pulse rounded-3xl" />
+            <div className="glass h-64 animate-pulse rounded-3xl" />
+            <div className="glass h-48 animate-pulse rounded-3xl" />
+          </div>
         </main>
       </div>
     );
   }
 
+  const displayName = form.full_name || form.username;
+
   const privacy = [
     {
       key: "is_private" as const,
       label: "Private profile",
-      hint: "Only you can view your profile page.",
+      hint: "Only followers can view your profile.",
     },
     {
       key: "show_governorate" as const,
@@ -169,47 +183,79 @@ function SettingsPage() {
   return (
     <div className="min-h-screen">
       <TopBar />
-      <main id="main-content" className="mx-auto max-w-3xl space-y-4 px-4 py-6">
-        <ProfileView profile={form} isOwner={true} />
+      <main id="main-content" className="mx-auto max-w-2xl space-y-4 px-4 py-8">
+        <h1 className="font-[family-name:var(--font-display)] text-2xl font-extrabold tracking-tight">
+          Settings
+        </h1>
 
+        {/* Profile section */}
         <section className="glass space-y-5 rounded-3xl p-5">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="font-[family-name:var(--font-display)] text-lg font-extrabold">
-              Edit profile
-            </h2>
+          <div className="flex items-center gap-2">
+            <User className="size-4 text-primary" />
+            <h2 className="font-semibold">Profile</h2>
             {form.is_verified && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-gold/15 px-3 py-1 text-xs font-semibold text-gold">
-                <BadgeCheck className="size-4" /> Verified
+              <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-gold/15 px-3 py-1 text-xs font-semibold text-gold">
+                <BadgeCheck className="size-3.5" /> Verified
               </span>
             )}
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2">
-            {(["cover", "avatar"] as const).map((kind) => (
-              <div key={kind} className="space-y-1.5">
-                <Label htmlFor={`${kind}-file`}>
-                  {kind === "cover" ? "Cover photo" : "Avatar"}
-                </Label>
-                <label
-                  htmlFor={`${kind}-file`}
-                  className="flex cursor-pointer items-center gap-2 rounded-xl border border-dashed border-border/70 px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:border-primary/60 hover:text-primary"
-                >
-                  {uploading === kind ? (
-                    <Loader2 className="size-4 animate-spin" />
-                  ) : (
-                    <ImagePlus className="size-4" />
-                  )}
-                  Upload image
-                </label>
-                <input
-                  id={`${kind}-file`}
-                  type="file"
-                  accept="image/*"
-                  className="sr-only"
-                  onChange={(e) => pick(kind, e.target.files?.[0])}
-                />
-              </div>
-            ))}
+          {/* Avatar row */}
+          <div className="flex items-center gap-4">
+            <div className="relative shrink-0">
+              <Avatar className="size-16 ring-2 ring-primary/30">
+                {resolvedAvatar && <AvatarImage src={resolvedAvatar} className="object-cover" />}
+                <AvatarFallback className="bg-primary/15 text-lg font-bold text-primary">
+                  {getInitials(displayName)}
+                </AvatarFallback>
+              </Avatar>
+              <label
+                htmlFor="avatar-file"
+                className="absolute -bottom-1 -right-1 flex size-6 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md transition-opacity hover:opacity-90"
+                title="Change avatar"
+              >
+                {uploading === "avatar" ? (
+                  <Loader2 className="size-3 animate-spin" />
+                ) : (
+                  <Camera className="size-3" />
+                )}
+              </label>
+              <input
+                id="avatar-file"
+                type="file"
+                accept="image/*"
+                className="sr-only"
+                onChange={(e) => pick("avatar", e.target.files?.[0])}
+              />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-semibold">{displayName}</p>
+              <p className="text-sm text-muted-foreground">@{form.username}</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">{user.email}</p>
+            </div>
+          </div>
+
+          {/* Cover upload */}
+          <div className="space-y-1.5">
+            <Label htmlFor="cover-file">Cover photo</Label>
+            <label
+              htmlFor="cover-file"
+              className="flex cursor-pointer items-center gap-2 rounded-xl border border-dashed border-border/70 px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:border-primary/60 hover:text-primary"
+            >
+              {uploading === "cover" ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <ImagePlus className="size-4" />
+              )}
+              Upload cover photo
+            </label>
+            <input
+              id="cover-file"
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              onChange={(e) => pick("cover", e.target.files?.[0])}
+            />
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
@@ -239,7 +285,7 @@ function SettingsPage() {
               id="bio"
               rows={3}
               maxLength={280}
-              value={form.bio}
+              value={form.bio ?? ""}
               onChange={(e) => set("bio", e.target.value)}
               placeholder="Manoushe lover from Batroun 🌲"
               className="rounded-xl"
@@ -273,10 +319,19 @@ function SettingsPage() {
               />
             </div>
           </div>
+
+          <Button onClick={save} disabled={saving} className="rounded-full">
+            {saving && <Loader2 className="size-4 animate-spin" />}
+            Save changes
+          </Button>
         </section>
 
+        {/* Privacy section */}
         <section className="glass space-y-3 rounded-3xl p-5">
-          <h2 className="font-[family-name:var(--font-display)] text-lg font-extrabold">Privacy</h2>
+          <div className="flex items-center gap-2">
+            <Lock className="size-4 text-primary" />
+            <h2 className="font-semibold">Privacy</h2>
+          </div>
           {privacy.map(({ key, label, hint }) => (
             <div
               key={key}
@@ -291,14 +346,16 @@ function SettingsPage() {
           ))}
         </section>
 
-        <div className="flex flex-wrap gap-2 pb-10">
-          <Button onClick={save} disabled={saving} className="rounded-full">
-            {saving && <Loader2 className="size-4 animate-spin" />} Save changes
-          </Button>
+        {/* Account section */}
+        <section className="glass rounded-3xl p-5">
+          <h2 className="mb-3 font-semibold">Account</h2>
+          <p className="mb-4 text-sm text-muted-foreground">Signed in as {user.email}</p>
           <Button variant="outline" onClick={signOut} className="rounded-full">
             <LogOut className="size-4" /> Sign out
           </Button>
-        </div>
+        </section>
+
+        <div className="pb-10" />
       </main>
     </div>
   );
