@@ -9,6 +9,7 @@ import {
   Flame,
   Search,
   Settings,
+  Shield,
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
@@ -44,7 +45,7 @@ export function LeftNav() {
     queryFn: async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("id, full_name, username, avatar_url")
+        .select("id, full_name, username, avatar_url, is_admin")
         .eq("id", user!.id)
         .maybeSingle();
       return data as {
@@ -52,6 +53,7 @@ export function LeftNav() {
         full_name: string;
         username: string;
         avatar_url: string | null;
+        is_admin: boolean;
       } | null;
     },
     enabled: !!user?.id,
@@ -137,6 +139,15 @@ export function LeftNav() {
             {label}
           </Link>
         ))}
+        {profile?.is_admin && (
+          <Link
+            to="/admin"
+            className={`${LINK_BASE} mt-1 border-t border-border/40 pt-2 text-red-600 dark:text-red-400 hover:bg-red-500/10`}
+          >
+            <Shield className="size-5" />
+            Admin Panel
+          </Link>
+        )}
       </div>
     </nav>
   );
