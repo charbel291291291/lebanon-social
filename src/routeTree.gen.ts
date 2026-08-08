@@ -21,8 +21,20 @@ import { Route as MarketplaceRouteImport } from './routes/marketplace'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as TourismRouteImport } from './routes/tourism'
 import { Route as TrendingRouteImport } from './routes/trending'
+import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as UUsernameRouteImport } from './routes/u.$username'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
+import { Route as AuthenticatedAdminBusinessesRouteImport } from './routes/_authenticated/admin/businesses'
+import { Route as AuthenticatedAdminCommentsRouteImport } from './routes/_authenticated/admin/comments'
+import { Route as AuthenticatedAdminCommunitiesRouteImport } from './routes/_authenticated/admin/communities'
+import { Route as AuthenticatedAdminEventsRouteImport } from './routes/_authenticated/admin/events'
+import { Route as AuthenticatedAdminFoodRouteImport } from './routes/_authenticated/admin/food'
+import { Route as AuthenticatedAdminMarketplaceRouteImport } from './routes/_authenticated/admin/marketplace'
+import { Route as AuthenticatedAdminPostsRouteImport } from './routes/_authenticated/admin/posts'
+import { Route as AuthenticatedAdminTourismRouteImport } from './routes/_authenticated/admin/tourism'
+import { Route as AuthenticatedAdminTrendsRouteImport } from './routes/_authenticated/admin/trends'
+import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -83,6 +95,11 @@ const TrendingRoute = TrendingRouteImport.update({
   path: '/trending',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminRouteRoute = AuthenticatedAdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -92,6 +109,68 @@ const UUsernameRoute = UUsernameRouteImport.update({
   id: '/u/$username',
   path: '/u/$username',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
+} as any)
+const AuthenticatedAdminBusinessesRoute =
+  AuthenticatedAdminBusinessesRouteImport.update({
+    id: '/businesses',
+    path: '/businesses',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminCommentsRoute =
+  AuthenticatedAdminCommentsRouteImport.update({
+    id: '/comments',
+    path: '/comments',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminCommunitiesRoute =
+  AuthenticatedAdminCommunitiesRouteImport.update({
+    id: '/communities',
+    path: '/communities',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminEventsRoute =
+  AuthenticatedAdminEventsRouteImport.update({
+    id: '/events',
+    path: '/events',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminFoodRoute = AuthenticatedAdminFoodRouteImport.update({
+  id: '/food',
+  path: '/food',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
+} as any)
+const AuthenticatedAdminMarketplaceRoute =
+  AuthenticatedAdminMarketplaceRouteImport.update({
+    id: '/marketplace',
+    path: '/marketplace',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminPostsRoute = AuthenticatedAdminPostsRouteImport.update({
+  id: '/posts',
+  path: '/posts',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
+} as any)
+const AuthenticatedAdminTourismRoute =
+  AuthenticatedAdminTourismRouteImport.update({
+    id: '/tourism',
+    path: '/tourism',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminTrendsRoute =
+  AuthenticatedAdminTrendsRouteImport.update({
+    id: '/trends',
+    path: '/trends',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -106,8 +185,20 @@ export interface FileRoutesByFullPath {
   '/search': typeof SearchRoute
   '/tourism': typeof TourismRoute
   '/trending': typeof TrendingRoute
+  '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRoute
   '/u/$username': typeof UUsernameRoute
+  '/admin/businesses': typeof AuthenticatedAdminBusinessesRoute
+  '/admin/comments': typeof AuthenticatedAdminCommentsRoute
+  '/admin/communities': typeof AuthenticatedAdminCommunitiesRoute
+  '/admin/events': typeof AuthenticatedAdminEventsRoute
+  '/admin/food': typeof AuthenticatedAdminFoodRoute
+  '/admin/marketplace': typeof AuthenticatedAdminMarketplaceRoute
+  '/admin/posts': typeof AuthenticatedAdminPostsRoute
+  '/admin/tourism': typeof AuthenticatedAdminTourismRoute
+  '/admin/trends': typeof AuthenticatedAdminTrendsRoute
+  '/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/admin/': typeof AuthenticatedAdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -123,6 +214,17 @@ export interface FileRoutesByTo {
   '/trending': typeof TrendingRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/u/$username': typeof UUsernameRoute
+  '/admin/businesses': typeof AuthenticatedAdminBusinessesRoute
+  '/admin/comments': typeof AuthenticatedAdminCommentsRoute
+  '/admin/communities': typeof AuthenticatedAdminCommunitiesRoute
+  '/admin/events': typeof AuthenticatedAdminEventsRoute
+  '/admin/food': typeof AuthenticatedAdminFoodRoute
+  '/admin/marketplace': typeof AuthenticatedAdminMarketplaceRoute
+  '/admin/posts': typeof AuthenticatedAdminPostsRoute
+  '/admin/tourism': typeof AuthenticatedAdminTourismRoute
+  '/admin/trends': typeof AuthenticatedAdminTrendsRoute
+  '/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/admin': typeof AuthenticatedAdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -138,8 +240,20 @@ export interface FileRoutesById {
   '/search': typeof SearchRoute
   '/tourism': typeof TourismRoute
   '/trending': typeof TrendingRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/u/$username': typeof UUsernameRoute
+  '/_authenticated/admin/businesses': typeof AuthenticatedAdminBusinessesRoute
+  '/_authenticated/admin/comments': typeof AuthenticatedAdminCommentsRoute
+  '/_authenticated/admin/communities': typeof AuthenticatedAdminCommunitiesRoute
+  '/_authenticated/admin/events': typeof AuthenticatedAdminEventsRoute
+  '/_authenticated/admin/food': typeof AuthenticatedAdminFoodRoute
+  '/_authenticated/admin/marketplace': typeof AuthenticatedAdminMarketplaceRoute
+  '/_authenticated/admin/posts': typeof AuthenticatedAdminPostsRoute
+  '/_authenticated/admin/tourism': typeof AuthenticatedAdminTourismRoute
+  '/_authenticated/admin/trends': typeof AuthenticatedAdminTrendsRoute
+  '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -155,8 +269,20 @@ export interface FileRouteTypes {
     | '/search'
     | '/tourism'
     | '/trending'
+    | '/admin'
     | '/settings'
     | '/u/$username'
+    | '/admin/businesses'
+    | '/admin/comments'
+    | '/admin/communities'
+    | '/admin/events'
+    | '/admin/food'
+    | '/admin/marketplace'
+    | '/admin/posts'
+    | '/admin/tourism'
+    | '/admin/trends'
+    | '/admin/users'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -172,6 +298,17 @@ export interface FileRouteTypes {
     | '/trending'
     | '/settings'
     | '/u/$username'
+    | '/admin/businesses'
+    | '/admin/comments'
+    | '/admin/communities'
+    | '/admin/events'
+    | '/admin/food'
+    | '/admin/marketplace'
+    | '/admin/posts'
+    | '/admin/tourism'
+    | '/admin/trends'
+    | '/admin/users'
+    | '/admin'
   id:
     | '__root__'
     | '/'
@@ -186,8 +323,20 @@ export interface FileRouteTypes {
     | '/search'
     | '/tourism'
     | '/trending'
+    | '/_authenticated/admin'
     | '/_authenticated/settings'
     | '/u/$username'
+    | '/_authenticated/admin/businesses'
+    | '/_authenticated/admin/comments'
+    | '/_authenticated/admin/communities'
+    | '/_authenticated/admin/events'
+    | '/_authenticated/admin/food'
+    | '/_authenticated/admin/marketplace'
+    | '/_authenticated/admin/posts'
+    | '/_authenticated/admin/tourism'
+    | '/_authenticated/admin/trends'
+    | '/_authenticated/admin/users'
+    | '/_authenticated/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -292,6 +441,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TrendingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/settings': {
       id: '/_authenticated/settings'
       path: '/settings'
@@ -306,14 +462,127 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UUsernameRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin/': {
+      id: '/_authenticated/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/businesses': {
+      id: '/_authenticated/admin/businesses'
+      path: '/businesses'
+      fullPath: '/admin/businesses'
+      preLoaderRoute: typeof AuthenticatedAdminBusinessesRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/comments': {
+      id: '/_authenticated/admin/comments'
+      path: '/comments'
+      fullPath: '/admin/comments'
+      preLoaderRoute: typeof AuthenticatedAdminCommentsRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/communities': {
+      id: '/_authenticated/admin/communities'
+      path: '/communities'
+      fullPath: '/admin/communities'
+      preLoaderRoute: typeof AuthenticatedAdminCommunitiesRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/events': {
+      id: '/_authenticated/admin/events'
+      path: '/events'
+      fullPath: '/admin/events'
+      preLoaderRoute: typeof AuthenticatedAdminEventsRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/food': {
+      id: '/_authenticated/admin/food'
+      path: '/food'
+      fullPath: '/admin/food'
+      preLoaderRoute: typeof AuthenticatedAdminFoodRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/marketplace': {
+      id: '/_authenticated/admin/marketplace'
+      path: '/marketplace'
+      fullPath: '/admin/marketplace'
+      preLoaderRoute: typeof AuthenticatedAdminMarketplaceRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/posts': {
+      id: '/_authenticated/admin/posts'
+      path: '/posts'
+      fullPath: '/admin/posts'
+      preLoaderRoute: typeof AuthenticatedAdminPostsRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/tourism': {
+      id: '/_authenticated/admin/tourism'
+      path: '/tourism'
+      fullPath: '/admin/tourism'
+      preLoaderRoute: typeof AuthenticatedAdminTourismRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/trends': {
+      id: '/_authenticated/admin/trends'
+      path: '/trends'
+      fullPath: '/admin/trends'
+      preLoaderRoute: typeof AuthenticatedAdminTrendsRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/users': {
+      id: '/_authenticated/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
   }
 }
 
+interface AuthenticatedAdminRouteRouteChildren {
+  AuthenticatedAdminBusinessesRoute: typeof AuthenticatedAdminBusinessesRoute
+  AuthenticatedAdminCommentsRoute: typeof AuthenticatedAdminCommentsRoute
+  AuthenticatedAdminCommunitiesRoute: typeof AuthenticatedAdminCommunitiesRoute
+  AuthenticatedAdminEventsRoute: typeof AuthenticatedAdminEventsRoute
+  AuthenticatedAdminFoodRoute: typeof AuthenticatedAdminFoodRoute
+  AuthenticatedAdminMarketplaceRoute: typeof AuthenticatedAdminMarketplaceRoute
+  AuthenticatedAdminPostsRoute: typeof AuthenticatedAdminPostsRoute
+  AuthenticatedAdminTourismRoute: typeof AuthenticatedAdminTourismRoute
+  AuthenticatedAdminTrendsRoute: typeof AuthenticatedAdminTrendsRoute
+  AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+}
+
+const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren =
+  {
+    AuthenticatedAdminBusinessesRoute: AuthenticatedAdminBusinessesRoute,
+    AuthenticatedAdminCommentsRoute: AuthenticatedAdminCommentsRoute,
+    AuthenticatedAdminCommunitiesRoute: AuthenticatedAdminCommunitiesRoute,
+    AuthenticatedAdminEventsRoute: AuthenticatedAdminEventsRoute,
+    AuthenticatedAdminFoodRoute: AuthenticatedAdminFoodRoute,
+    AuthenticatedAdminMarketplaceRoute: AuthenticatedAdminMarketplaceRoute,
+    AuthenticatedAdminPostsRoute: AuthenticatedAdminPostsRoute,
+    AuthenticatedAdminTourismRoute: AuthenticatedAdminTourismRoute,
+    AuthenticatedAdminTrendsRoute: AuthenticatedAdminTrendsRoute,
+    AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
+    AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+  }
+
+const AuthenticatedAdminRouteRouteWithChildren =
+  AuthenticatedAdminRouteRoute._addFileChildren(
+    AuthenticatedAdminRouteRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRouteWithChildren
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminRouteRoute: AuthenticatedAdminRouteRouteWithChildren,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
 }
 
